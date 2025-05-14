@@ -1,0 +1,50 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h1 class="h4 mb-0">{{ title }}</h1>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{{ url_for('seasons.store') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name der Saison *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ formData.name ?? '' }}" required autofocus>
+                            <div class="form-text">
+                                Geben Sie einen Namen für die Saison ein, z.B. "Frühjahr 2023" oder "Liga 1 - 2023/24"
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="startDate" class="form-label">Monat der Saison</label>
+                            <input type="month" class="form-control" id="startDate" name="startDate" value="{{ formData.startDate ?? '' }}">
+                            <div class="form-text">
+                                Wählen Sie den Monat für diese Saison. Die Saison läuft vom ersten bis zum letzten Tag des gewählten Monats.
+                                Falls kein Monat ausgewählt wird, wird der aktuelle Monat verwendet.
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="ph-info-circle me-2"></i>
+                            Eine Saison umfasst immer einen vollen Monat (1. bis letzter Tag). 
+                            Es werden nur Spiele gezählt, die innerhalb dieses Zeitraums stattgefunden haben.
+                        </div>
+                        
+                        <div class="d-flex">
+                            <a href="{{ url_for('seasons.list') }}" class="btn btn-secondary me-2">Abbrechen</a>
+                            <button type="submit" class="btn btn-primary">Saison erstellen</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

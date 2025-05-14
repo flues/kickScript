@@ -1,0 +1,55 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('players.list') }}" class="btn btn-secondary">
+                <i class="ph-arrow-left"></i> Zurück zur Spielerliste
+            </a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            {% if error is defined %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="ph-warning-circle me-2"></i> {{ error }}
+                </div>
+            {% endif %}
+            
+            <form action="{{ url_for('players.store') }}" method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ formData.name|default('') }}" required>
+                    <div class="form-text text-muted">Vollständiger Name des Spielers</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="nickname" class="form-label">Spitzname</label>
+                    <input type="text" class="form-control" id="nickname" name="nickname" value="{{ formData.nickname|default('') }}">
+                    <div class="form-text text-muted">Optionaler Spitzname</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="avatar" class="form-label">Avatar URL</label>
+                    <input type="url" class="form-control" id="avatar" name="avatar" value="{{ formData.avatar|default('') }}">
+                    <div class="form-text text-muted">Optionale URL zu einem Profilbild</div>
+                </div>
+                
+                <hr class="my-4 border-secondary">
+                
+                <div class="text-muted mb-3">
+                    <i class="ph-info-circle me-1"></i> Hinweis: Der ELO-Wert wird automatisch mit dem Standardwert 1000 initialisiert.
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                    <button type="reset" class="btn btn-secondary me-2">Zurücksetzen</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ph-check"></i> Spieler anlegen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %} 

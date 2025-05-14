@@ -1,0 +1,430 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body text-center py-5">
+                    <h1 class="display-4 mb-3">Fietzball Liga</h1>
+                    <p class="lead">Verwalte Spieler und erfasse Spiele für deine Kickerliga.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('players.list') }}" class="btn btn-primary me-2">
+                            <i class="ph-users"></i> Spieler verwalten
+                        </a>
+                        <a href="{{ url_for('matches.create') }}" class="btn btn-success me-2">
+                            <i class="ph-soccer-ball"></i> Neues Spiel erfassen
+                        </a>
+                        <a href="{{ url_for('seasons.create') }}" class="btn btn-warning me-2">
+                            <i class="ph-trophy"></i> Neue Saison erstellen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if activeSeason %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Aktive Saison: {{ activeSeason.name }}</h5>
+                    <a href="{{ url_for('seasons.view', {'id': activeSeason.id}) }}" class="btn btn-sm btn-secondary">Details</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-dark text-center mb-3">
+                                <div class="card-body">
+                                    <h3 class="mb-0">{{ activeSeason.statistics.totalMatches }}</h3>
+                                    <small class="text-muted">Spiele in der Saison</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-dark text-center mb-3">
+                                <div class="card-body">
+                                    <h3 class="mb-0">{{ activeSeason.statistics.totalGoals }}</h3>
+                                    <small class="text-muted">Tore gesamt</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-dark text-center mb-3">
+                                <div class="card-body">
+                                    <h3 class="mb-0">{{ activeSeason.getDurationInDays() }}</h3>
+                                    <small class="text-muted">Tage aktiv</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-dark text-center mb-3">
+                                <div class="card-body">
+                                    {% set now = "now"|date("Y-m-d") %}
+                                    {% set endDate = "now"|date_modify("last day of this month") %}
+                                    <div id="countdown-wrapper">
+                                        <div class="d-flex justify-content-center countdown-timer">
+                                            <div class="countdown-item mx-1">
+                                                <div class="countdown-value" id="countdown-days">--</div>
+                                                <div class="countdown-label text-muted small">Tage</div>
+                                            </div>
+                                            <div class="countdown-item mx-1">
+                                                <div class="countdown-value" id="countdown-hours">--</div>
+                                                <div class="countdown-label text-muted small">Std</div>
+                                            </div>
+                                            <div class="countdown-item mx-1">
+                                                <div class="countdown-value" id="countdown-minutes">--</div>
+                                                <div class="countdown-label text-muted small">Min</div>
+                                            </div>
+                                            <div class="countdown-item mx-1">
+                                                <div class="countdown-value" id="countdown-seconds">--</div>
+                                                <div class="countdown-label text-muted small">Sek</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="season-end-timestamp" value="{{ endDate|date('U') }}">
+                                        <small class="text-muted d-block mt-1">Enddatum: {{ endDate|date('d.m.Y') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-3 mb-2">Top 3 Spieler der Saison</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rang</th>
+                                    <th>Spieler</th>
+                                    <th>Punkte</th>
+                                    <th>S/U/N</th>
+                                    <th>Tore</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set standings = activeSeason.getSortedStandings() %}
+                                {% for player in standings|slice(0, 3) %}
+                                    <tr>
+                                        <td>{{ player.rank }}</td>
+                                        <td>
+                                            <a href="{{ url_for('players.view', {'id': player.playerId}) }}" class="text-decoration-none text-light">
+                                                {% if player.avatar %}
+                                                    <img src="{{ player.avatar }}" class="rounded-circle me-2" width="24" height="24" alt="{{ player.name }}">
+                                                {% else %}
+                                                    <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-2" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                        {{ player.name|slice(0, 1)|upper }}
+                                                    </span>
+                                                {% endif %}
+                                                {{ player.displayName }}
+                                            </a>
+                                        </td>
+                                        <td>{{ player.points }}</td>
+                                        <td>{{ player.wins }}/{{ player.draws }}/{{ player.losses }}</td>
+                                        <td>{{ player.goalsScored }}:{{ player.goalsConceded }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Noch keine Spieler in der Tabelle</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Top Spieler</h5>
+                    <a href="{{ url_for('players.list') }}" class="btn btn-sm btn-secondary">Alle anzeigen</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>ELO</th>
+                                    <th>Spiele</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if topPlayers|length > 0 %}
+                                    {% for player in topPlayers %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>
+                                                <a href="{{ url_for('players.view', {'id': player.id}) }}" class="text-decoration-none text-light">
+                                                    {% if player.avatar %}
+                                                        <img src="{{ player.avatar }}" class="rounded-circle me-2" width="30" height="30" alt="{{ player.name }}">
+                                                    {% else %}
+                                                        <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px;">
+                                                            {{ player.name|slice(0, 1)|upper }}
+                                                        </span>
+                                                    {% endif %}
+                                                    {{ player.displayName }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if loop.index <= 3 %}elo-badge-{{ loop.index }}{% else %}bg-secondary{% endif %}">
+                                                    {{ player.eloRating }}
+                                                </span>
+                                            </td>
+                                            <td>{{ player.statistics.matchesPlayed }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Noch keine Spieler</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Letzte Spiele</h5>
+                    <a href="{{ url_for('matches.history') }}" class="btn btn-sm btn-secondary">Alle anzeigen</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th>Spieler</th>
+                                    <th>Ergebnis</th>
+                                    <th>ELO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if recentMatches|length > 0 %}
+                                    {% for match in recentMatches %}
+                                        <tr>
+                                            <td>{{ match.playedAt|date('d.m.Y H:i') }}</td>
+                                            <td>
+                                                {% set player1 = player_service.getPlayerById(match.player1Id) %}
+                                                {% set player2 = player_service.getPlayerById(match.player2Id) %}
+                                                
+                                                <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none text-light">
+                                                    {% if player1.avatar %}
+                                                        <img src="{{ player1.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player1.name }}">
+                                                    {% else %}
+                                                        <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                            {{ player1.name|slice(0, 1)|upper }}
+                                                        </span>
+                                                    {% endif %}
+                                                    {{ player1.displayName ?? 'Unbekannt' }}
+                                                </a> 
+                                                vs 
+                                                <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none text-light">
+                                                    {% if player2.avatar %}
+                                                        <img src="{{ player2.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player2.name }}">
+                                                    {% else %}
+                                                        <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                            {{ player2.name|slice(0, 1)|upper }}
+                                                        </span>
+                                                    {% endif %}
+                                                    {{ player2.displayName ?? 'Unbekannt' }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if match.player1IsWinner %}bg-success{% elseif match.player2IsWinner %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ match.scorePlayer1 }}:{{ match.scorePlayer2 }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if match.eloChange is iterable %}
+                                                    <span class="{{ match.eloChange.player1 > 0 ? 'text-success' : (match.eloChange.player1 < 0 ? 'text-danger' : '') }}">
+                                                        {{ match.eloChange.player1 > 0 ? '+' : '' }}{{ match.eloChange.player1 }}
+                                                    </span>
+                                                    /
+                                                    <span class="{{ match.eloChange.player2 > 0 ? 'text-success' : (match.eloChange.player2 < 0 ? 'text-danger' : '') }}">
+                                                        {{ match.eloChange.player2 > 0 ? '+' : '' }}{{ match.eloChange.player2 }}
+                                                    </span>
+                                                    {% if match.notes %}
+                                                        <i class="ph-info ms-2 text-info" 
+                                                           data-bs-toggle="popover" 
+                                                           data-bs-placement="top" 
+                                                           data-bs-trigger="hover focus"
+                                                           data-bs-content="{{ match.notes }}"
+                                                           style="cursor: pointer;"></i>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% if match.eloChange > 0 %}
+                                                        <span class="text-success">+{{ match.eloChange }}</span>
+                                                    {% elseif match.eloChange < 0 %}
+                                                        <span class="text-danger">{{ match.eloChange }}</span>
+                                                    {% else %}
+                                                        <span class="text-secondary">0</span>
+                                                    {% endif %}
+                                                    {% if match.notes %}
+                                                        <i class="ph-info ms-2 text-info" 
+                                                           data-bs-toggle="popover" 
+                                                           data-bs-placement="top" 
+                                                           data-bs-trigger="hover focus"
+                                                           data-bs-content="{{ match.notes }}"
+                                                           style="cursor: pointer;"></i>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Noch keine Spiele</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="ph-users ph-2x mb-3" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title">Spieler</h5>
+                    <h2 class="mb-3">{{ playerCount }}</h2>
+                    <a href="{{ url_for('players.create') }}" class="btn btn-sm btn-primary">Spieler anlegen</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="ph-soccer-ball" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title">Spiele</h5>
+                    <h2 class="mb-3">{{ matchCount }}</h2>
+                    <a href="{{ url_for('matches.create') }}" class="btn btn-sm btn-success">Spiel erfassen</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="ph-trophy" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title">Saisons</h5>
+                    <h2 class="mb-3">{{ seasonCount }}</h2>
+                    <a href="{{ url_for('seasons.list') }}" class="btn btn-sm btn-warning">Saisons anzeigen</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .countdown-value {
+        font-size: 1.6rem;
+        font-weight: 600;
+        line-height: 1;
+        color: #fff;
+    }
+    
+    .countdown-item {
+        padding: 0.25rem;
+        text-align: center;
+        min-width: 40px;
+    }
+    
+    .countdown-label {
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        text-transform: uppercase;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialisiere alle Popovers auf der Seite
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, {
+                html: false,
+                sanitize: true
+            });
+        });
+        
+        // Initialisiere den Countdown direkt
+        initializeCountdown();
+
+        // Funktion zum Initialisieren des Countdowns
+        function initializeCountdown() {
+            const countdownDays = document.getElementById('countdown-days');
+            const countdownHours = document.getElementById('countdown-hours');
+            const countdownMinutes = document.getElementById('countdown-minutes');
+            const countdownSeconds = document.getElementById('countdown-seconds');
+            const timestampElement = document.getElementById('season-end-timestamp');
+            
+            if (!countdownDays || !countdownHours || !countdownMinutes || !countdownSeconds || !timestampElement) {
+                console.error("Countdown-Elemente nicht gefunden!");
+                return;
+            }
+            
+            // Unix-Timestamp aus dem hidden input holen (in Sekunden)
+            const targetTimestamp = parseInt(timestampElement.value);
+            if (isNaN(targetTimestamp)) {
+                console.error("Ungültiger Timestamp:", timestampElement.value);
+                return;
+            }
+            
+            // Zieldatum in Millisekunden
+            const targetDate = new Date(targetTimestamp * 1000);
+            console.log("Zieldatum:", targetDate.toLocaleString());
+            
+            // Funktion für die Aktualisierung des Countdowns
+            function updateCountdown() {
+                const now = new Date();
+                const diff = targetDate - now;
+                
+                if (diff <= 0) {
+                    countdownDays.textContent = "00";
+                    countdownHours.textContent = "00";
+                    countdownMinutes.textContent = "00";
+                    countdownSeconds.textContent = "00";
+                    return;
+                }
+                
+                // Berechnung der verbleibenden Zeit
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                // Anzeige mit führenden Nullen
+                countdownDays.textContent = days < 10 ? "0" + days : days;
+                countdownHours.textContent = hours < 10 ? "0" + hours : hours;
+                countdownMinutes.textContent = minutes < 10 ? "0" + minutes : minutes;
+                countdownSeconds.textContent = seconds < 10 ? "0" + seconds : seconds;
+            }
+            
+            // Initiale Aktualisierung
+            updateCountdown();
+            
+            // Aktualisierung jede Sekunde
+            setInterval(updateCountdown, 1000);
+        }
+    });
+</script>
+{% endblock %} 

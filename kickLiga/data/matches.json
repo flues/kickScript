@@ -1,0 +1,41 @@
+{
+    "match_682486f6eb8e2": {
+        "id": "match_682486f6eb8e2",
+        "player1Id": "player_682486a0a34bd",
+        "player2Id": "player_6824864e806f9",
+        "scorePlayer1": 2,
+        "scorePlayer2": 10,
+        "playedAt": 1747224240,
+        "eloChange": {
+            "player1": -27,
+            "player2": 27
+        },
+        "notes": "Bodenlose Kurbeltore von Tralalero, Bombardiro heute aber auch nicht ausgeschlafen."
+    },
+    "match_68248726ec318": {
+        "id": "match_68248726ec318",
+        "player1Id": "player_68248673345da",
+        "player2Id": "player_6824864e806f9",
+        "scorePlayer1": 10,
+        "scorePlayer2": 9,
+        "playedAt": 1746777900,
+        "eloChange": {
+            "player1": 17,
+            "player2": -17
+        },
+        "notes": "Sehr knappes Spiel. Am Tung Tung knallt das Siegtor über die Bande rein."
+    },
+    "match_682487480539e": {
+        "id": "match_682487480539e",
+        "player1Id": "player_68248673345da",
+        "player2Id": "player_682486a0a34bd",
+        "scorePlayer1": 10,
+        "scorePlayer2": 6,
+        "playedAt": 1746446760,
+        "eloChange": {
+            "player1": 18,
+            "player2": -18
+        },
+        "notes": "Bombardiro hatte noch Hangover von Saufi gestern."
+    }
+}

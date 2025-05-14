@@ -1,0 +1,111 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ title }}</h1>
+        <div>
+            <a href="{{ url_for('players.view', {'id': player.id}) }}" class="btn btn-secondary me-2">
+                <i class="ph-arrow-left"></i> Zurück zum Spieler
+            </a>
+            <a href="{{ url_for('players.list') }}" class="btn btn-secondary">
+                <i class="ph-list"></i> Alle Spieler
+            </a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            {% if error is defined %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="ph-warning-circle me-2"></i> {{ error }}
+                </div>
+            {% endif %}
+            
+            <form action="{{ url_for('players.update', {'id': player.id}) }}" method="post">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ player.name }}" required>
+                    <div class="form-text text-muted">Vollständiger Name des Spielers</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="nickname" class="form-label">Spitzname</label>
+                    <input type="text" class="form-control" id="nickname" name="nickname" value="{{ player.nickname }}">
+                    <div class="form-text text-muted">Optionaler Spitzname</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="avatar" class="form-label">Avatar URL</label>
+                    <input type="url" class="form-control" id="avatar" name="avatar" value="{{ player.avatar }}">
+                    <div class="form-text text-muted">Optionale URL zu einem Profilbild</div>
+                    {% if player.avatar %}
+                        <div class="mt-2">
+                            <img src="{{ player.avatar }}" alt="{{ player.name }}" class="img-thumbnail" style="max-height: 100px;">
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <hr class="my-4 border-secondary">
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">ELO-Rating</label>
+                            <input type="text" class="form-control" value="{{ player.eloRating }}" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Erstellungsdatum</label>
+                            <input type="text" class="form-control" value="{{ player.createdAt|date('d.m.Y H:i') }}" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Letztes Spiel</label>
+                            <input type="text" class="form-control" value="{% if player.lastMatch %}{{ player.lastMatch|date('d.m.Y H:i') }}{% else %}Noch kein Spiel{% endif %}" disabled>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-muted mb-3">
+                    <i class="ph-info-circle me-1"></i> Hinweis: ELO und Statistiken können nicht direkt bearbeitet werden. Diese werden automatisch aktualisiert, wenn Spiele erfasst werden.
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePlayerModal">
+                        <i class="ph-trash"></i> Spieler löschen
+                    </button>
+                    <div>
+                        <button type="reset" class="btn btn-secondary me-2">Änderungen zurücksetzen</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ph-check"></i> Änderungen speichern
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deletePlayerModal" tabindex="-1" aria-labelledby="deletePlayerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="deletePlayerModalLabel">Spieler löschen</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bist du sicher, dass du den Spieler <strong>{{ player.displayName }}</strong> löschen möchtest?</p>
+                    <p class="text-danger">Diese Aktion kann nicht rückgängig gemacht werden!</p>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <form action="{{ url_for('players.delete', {'id': player.id}) }}" method="post">
+                        <button type="submit" class="btn btn-danger">Löschen</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

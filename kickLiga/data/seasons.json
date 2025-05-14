@@ -1,0 +1,66 @@
+{
+    "season_682486bdc92dd": {
+        "id": "season_682486bdc92dd",
+        "name": "OG first season",
+        "startDate": 1746050400,
+        "endDate": null,
+        "isActive": true,
+        "standings": {
+            "player_6824864e806f9": {
+                "playerId": "player_6824864e806f9",
+                "name": "Tralalero Tralala",
+                "displayName": "Tralalero Tralala",
+                "avatar": "https:\/\/media0.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExYjRhNWx3dXM1dmRhcmN0MXRkcnBxZHZxaWx1YXViYjhmYWZkczRjcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/XsNAXQl1E8ig8MHAhf\/giphy.gif",
+                "matches": 2,
+                "wins": 1,
+                "draws": 0,
+                "losses": 1,
+                "goalsScored": 19,
+                "goalsConceded": 12,
+                "goalDifference": 7,
+                "points": 3
+            },
+            "player_68248673345da": {
+                "playerId": "player_68248673345da",
+                "name": "Tung Tung Tung Tung Tung Sahur",
+                "displayName": "Tung Tung Tung Tung Tung Sahur",
+                "avatar": "https:\/\/media1.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExOHgwYmtlNGkwbG1iZGlscmR4bTZlZ3MzOGdncDVydHJ1OHk1MW5vbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/SfZZnC4IQoR77rTzlD\/giphy.webp",
+                "matches": 2,
+                "wins": 2,
+                "draws": 0,
+                "losses": 0,
+                "goalsScored": 20,
+                "goalsConceded": 15,
+                "goalDifference": 5,
+                "points": 6
+            },
+            "player_682486a0a34bd": {
+                "playerId": "player_682486a0a34bd",
+                "name": "Bombardiro Crocodilo",
+                "displayName": "Bombardiro Crocodilo",
+                "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExcDRxcW5odm1jem5vZzBuZzNwZGl0eXhudGVva21zYXJ3am5xN2YwMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/fkNqwkJArJ4FIJVWQK\/giphy.webp",
+                "matches": 2,
+                "wins": 0,
+                "draws": 0,
+                "losses": 2,
+                "goalsScored": 8,
+                "goalsConceded": 20,
+                "goalDifference": -12,
+                "points": 0
+            }
+        },
+        "statistics": {
+            "totalMatches": 3,
+            "totalGoals": 47,
+            "highestScore": {
+                "matchId": "match_682486f6eb8e2",
+                "winnerId": "player_6824864e806f9",
+                "loserId": "player_682486a0a34bd",
+                "score": "2-10",
+                "goalDifference": 8,
+                "date": 1747224240
+            },
+            "longestWinStreak": null
+        }
+    }
+}

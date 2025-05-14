@@ -1,0 +1,17 @@
+# Verhindere den Zugriff auf alle Verzeichnisse außer public
+RewriteEngine On
+RewriteRule ^(app|data|logs|templates|vendor) - [F,L]
+
+# Verbiete den Zugriff auf dotfiles
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+
+# Erlaube nur Zugriff auf das public-Verzeichnis
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+</IfModule> 

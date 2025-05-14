@@ -1,0 +1,62 @@
+## Projekt-Richtlinien für Kickerliga Management System
+
+### Allgemeine Verhaltensregeln
+
+- Antworte stets auf Deutsch, da dies die Projektsprache ist
+- Verwende PSR-12 Extended Coding Style für alle PHP-Dateien (https://www.php-fig.org/psr/psr-12/)
+- Befolge die MVC-Struktur des Slim Frameworks bei allen Code-Änderungen
+- Führe keine direkten DB-Aufrufe in Controllern durch, nutze stattdessen Services
+
+### Dokumentation
+
+- Die primäre Projektdokumentation befindet sich im `.docs/`-Ordner
+- Bei Änderungen an Features die entsprechenden Dokumentationsdateien aktualisieren
+- Neue Funktionen zuerst in der Dokumentation beschreiben, bevor sie implementiert werden
+- Code-Änderungen sollten wohldokumentiert sein, aber keine übermäßigen Kommentare enthalten
+
+### Projektstruktur
+
+- Beachte die definierte Ordnerstruktur:
+  - `app/` für Hauptanwendungscode (Controllers, Models, Services)
+  - `public/` für öffentlich zugängliche Dateien
+  - `data/` für JSON-Datenspeicherung (niemals direkt zugänglich)
+  - `templates/` für Twig-Templates
+  - `.docs/` für Projektdokumentation
+
+### Datenspeicherung
+
+- Alle Daten werden in JSON-Dateien gespeichert, keine externe Datenbank verwenden
+- Implementiere stets File-Locking bei Datenzugriffen
+- Nutze den DataService für alle Dateioperationen
+
+### Frontend-Entwicklung
+
+- Verwende Bootstrap 5 mit dunklem Theme (ähnlich Spotify/Discord)
+- Gradienten und moderne UI-Elemente für ansprechende Benutzeroberfläche
+- Chart.js für Datenvisualisierung
+- Phosphor Icons für konsistentes Icon-Design
+
+### Wichtige Features
+
+- ELO-Rating-System mit Tordifferenz-Modifikator
+- K.O.-Turniersystem mit Bracket-Generierung
+- Achievement-System (Badges) für Spielerleistungen
+- Saisonale Datenarchivierung
+
+### Best Practices
+
+- Validiere alle Benutzereingaben serverseitig
+- Implementiere Fehlerbehandlung mit angemessenen Benutzerbenachrichtigungen
+- Achte auf Datenschutz und sichere Implementierung
+- Beim Testen verschiedene Szenarien berücksichtigen (Edge Cases)
+
+### Wichtige Dokumente
+
+Beim Entwickeln folgende Dokumente als Referenz nutzen:
+- project.md - Hauptprojektdokumentation
+- architektur.md - Slim-Framework-Architektur
+- elo-system.md - ELO-Bewertungssystem
+- turniersystem.md - K.O.-Turniersystem
+- achievements.md - Badge-System
+- datenmodell.md - JSON-Dateistruktur
+- installation.md - Installationsanleitung 

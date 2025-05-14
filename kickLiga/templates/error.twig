@@ -1,0 +1,17 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="card text-center mb-4">
+        <div class="card-body py-5">
+            <i class="ph-warning-circle" style="font-size: 5rem; color: #dc3545;"></i>
+            <h1 class="mt-3">{{ title }}</h1>
+            <p class="lead">{{ message }}</p>
+            <div class="mt-4">
+                <a href="javascript:history.back()" class="btn btn-secondary me-2">
+                    <i class="ph-arrow-left"></i> Zurück
+                </a>
+                <a href="{{ url_for('home') }}" class="btn btn-primary">Zurück zur Startseite</a>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

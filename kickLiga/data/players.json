@@ -1,0 +1,146 @@
+{
+    "player_6824864e806f9": {
+        "id": "player_6824864e806f9",
+        "name": "Tralalero Tralala",
+        "nickname": null,
+        "avatar": "https:\/\/media0.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExYjRhNWx3dXM1dmRhcmN0MXRkcnBxZHZxaWx1YXViYjhmYWZkczRjcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/XsNAXQl1E8ig8MHAhf\/giphy.gif",
+        "eloRating": 1010,
+        "statistics": {
+            "wins": 1,
+            "losses": 1,
+            "draws": 0,
+            "goalsScored": 19,
+            "goalsConceded": 12,
+            "tournamentsWon": 0,
+            "tournamentsParticipated": 0,
+            "matchesPlayed": 2
+        },
+        "achievements": [],
+        "eloHistory": [
+            {
+                "rating": 1000,
+                "timestamp": 1747224142,
+                "reason": "initial"
+            },
+            {
+                "rating": 1027,
+                "change": 27,
+                "timestamp": 1747224310,
+                "reason": "Match gegen Bombardiro Crocodilo"
+            },
+            {
+                "rating": 1010,
+                "change": -17,
+                "timestamp": 1747224358,
+                "reason": "Match gegen Tung Tung Tung Tung Tung Sahur"
+            }
+        ],
+        "createdAt": 1747224142,
+        "lastMatch": 1747224358
+    },
+    "player_68248673345da": {
+        "id": "player_68248673345da",
+        "name": "Tung Tung Tung Tung Tung Sahur",
+        "nickname": null,
+        "avatar": "https:\/\/media1.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExOHgwYmtlNGkwbG1iZGlscmR4bTZlZ3MzOGdncDVydHJ1OHk1MW5vbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/SfZZnC4IQoR77rTzlD\/giphy.webp",
+        "eloRating": 1035,
+        "statistics": {
+            "wins": 2,
+            "losses": 0,
+            "draws": 0,
+            "goalsScored": 20,
+            "goalsConceded": 15,
+            "tournamentsWon": 0,
+            "tournamentsParticipated": 0,
+            "matchesPlayed": 2
+        },
+        "achievements": [],
+        "eloHistory": [
+            {
+                "rating": 1000,
+                "timestamp": 1747224179,
+                "reason": "initial"
+            },
+            {
+                "rating": 1017,
+                "change": 17,
+                "timestamp": 1747224358,
+                "reason": "Match gegen Tralalero Tralala"
+            },
+            {
+                "rating": 1035,
+                "change": 18,
+                "timestamp": 1747224392,
+                "reason": "Match gegen Bombardiro Crocodilo"
+            }
+        ],
+        "createdAt": 1747224179,
+        "lastMatch": 1747224392
+    },
+    "player_682486a0a34bd": {
+        "id": "player_682486a0a34bd",
+        "name": "Bombardiro Crocodilo",
+        "nickname": null,
+        "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExcDRxcW5odm1jem5vZzBuZzNwZGl0eXhudGVva21zYXJ3am5xN2YwMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/fkNqwkJArJ4FIJVWQK\/giphy.webp",
+        "eloRating": 955,
+        "statistics": {
+            "wins": 0,
+            "losses": 2,
+            "draws": 0,
+            "goalsScored": 8,
+            "goalsConceded": 20,
+            "tournamentsWon": 0,
+            "tournamentsParticipated": 0,
+            "matchesPlayed": 2
+        },
+        "achievements": [],
+        "eloHistory": [
+            {
+                "rating": 1000,
+                "timestamp": 1747224224,
+                "reason": "initial"
+            },
+            {
+                "rating": 973,
+                "change": -27,
+                "timestamp": 1747224310,
+                "reason": "Match gegen Tralalero Tralala"
+            },
+            {
+                "rating": 955,
+                "change": -18,
+                "timestamp": 1747224392,
+                "reason": "Match gegen Tung Tung Tung Tung Tung Sahur"
+            }
+        ],
+        "createdAt": 1747224224,
+        "lastMatch": 1747224392
+    },
+    "player_682488d836b86": {
+        "id": "player_682488d836b86",
+        "name": "Phil",
+        "nickname": null,
+        "avatar": "https:\/\/media1.giphy.com\/media\/WRuBiZKB6xgsS9DrFA\/giphy.webp?cid=ecf05e47xsvmoazefjf0n5ufzyb8ajvdbh4pk0nmmcfvss5u&ep=v1_gifs_search&rid=giphy.webp&ct=g",
+        "eloRating": 1000,
+        "statistics": {
+            "wins": 0,
+            "losses": 0,
+            "draws": 0,
+            "goalsScored": 0,
+            "goalsConceded": 0,
+            "tournamentsWon": 0,
+            "tournamentsParticipated": 0,
+            "matchesPlayed": 0
+        },
+        "achievements": [],
+        "eloHistory": [
+            {
+                "rating": 1000,
+                "timestamp": 1747224792,
+                "reason": "initial"
+            }
+        ],
+        "createdAt": 1747224792,
+        "lastMatch": null
+    }
+}

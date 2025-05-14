@@ -1,0 +1,309 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ player.displayName }}</h1>
+        <div>
+            <a href="{{ url_for('players.edit', {'id': player.id}) }}" class="btn btn-primary me-2">
+                <i class="ph-pencil"></i> Bearbeiten
+            </a>
+            <a href="{{ url_for('players.list') }}" class="btn btn-secondary">
+                <i class="ph-list"></i> Alle Spieler
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Spielerprofil -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    {% if player.avatar %}
+                        <img src="{{ player.avatar }}" alt="{{ player.name }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary rounded-circle d-flex justify-content-center align-items-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 4rem;">
+                            {{ player.name|slice(0, 1)|upper }}
+                        </div>
+                    {% endif %}
+                    
+                    <h3 class="card-title">{{ player.name }}</h3>
+                    {% if player.nickname %}
+                        <p class="text-muted">"{{ player.nickname }}"</p>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-primary fs-5 px-3 py-2">{{ player.eloRating }} ELO</span>
+                    </div>
+                    
+                    <div class="text-start mt-4">
+                        <p><strong>ID:</strong> <span class="text-muted">{{ player.id }}</span></p>
+                        <p><strong>Erstellt am:</strong> <span class="text-muted">{{ player.createdAt|date('d.m.Y H:i') }}</span></p>
+                        <p>
+                            <strong>Letztes Spiel:</strong> 
+                            <span class="text-muted">
+                                {% if player.lastMatch %}
+                                    {{ player.lastMatch|date('d.m.Y H:i') }}
+                                {% else %}
+                                    Noch kein Spiel
+                                {% endif %}
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <div class="mt-4 d-grid gap-2">
+                        <a href="{{ url_for('matches.create') }}?player={{ player.id }}" class="btn btn-success">
+                            <i class="ph-soccer-ball"></i> Neues Spiel mit diesem Spieler
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistiken -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Statistiken</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.statistics.matchesPlayed }}</h2>
+                                    <small class="text-muted">Spiele gesamt</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.statistics.wins }}</h2>
+                                    <small class="text-muted">Siege</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.statistics.losses }}</h2>
+                                    <small class="text-muted">Niederlagen</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.statistics.draws }}</h2>
+                                    <small class="text-muted">Unentschieden</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.winRate }}%</h2>
+                                    <small class="text-muted">Win-Rate</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.statistics.goalsScored }}</h2>
+                                    <small class="text-muted">Tore geschossen</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6 mb-3">
+                            <div class="card bg-gradient-dark text-center">
+                                <div class="card-body p-3">
+                                    <h2 class="mb-0">{{ player.statistics.goalsConceded }}</h2>
+                                    <small class="text-muted">Tore kassiert</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">ELO-Verlauf</h5>
+                    <div class="bg-dark p-3 rounded mb-3">
+                        <canvas id="eloChartCanvas" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Achievements -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Achievements</h5>
+                </div>
+                <div class="card-body">
+                    {% if player.achievements|length > 0 %}
+                        <div class="row">
+                            {% for achievement in player.achievements %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card bg-dark">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ achievement.name }}</h5>
+                                            <p class="card-text">{{ achievement.description }}</p>
+                                            <small class="text-muted">Freigeschaltet am: {{ achievement.unlockedAt|date('d.m.Y') }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="ph-medal" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <p class="mt-3 mb-0">Noch keine Achievements freigeschaltet.</p>
+                            <p class="text-muted">Spiele mehr Matches, um Achievements freizuschalten!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Letzte Spiele -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Letzte Spiele</h5>
+                    <a href="{{ url_for('matches.history') }}?player={{ player.id }}" class="btn btn-sm btn-secondary">Alle anzeigen</a>
+                </div>
+                <div class="card-body">
+                    {% if player.statistics.matchesPlayed > 0 %}
+                        {% if recentMatches|length > 0 %}
+                            <div class="list-group list-group-flush">
+                                {% for match in recentMatches %}
+                                    <div class="list-group-item bg-dark">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-muted me-2">{{ match.playedAt|date('d.m.Y') }}</span>
+                                                {% set opponent = match.player1Id == player.id 
+                                                    ? player_service.getPlayerById(match.player2Id) 
+                                                    : player_service.getPlayerById(match.player1Id) %}
+                                                <strong>vs. {{ opponent.displayName }}</strong>
+                                            </div>
+                                            <div>
+                                                {% set playerScore = match.player1Id == player.id ? match.scorePlayer1 : match.scorePlayer2 %}
+                                                {% set opponentScore = match.player1Id == player.id ? match.scorePlayer2 : match.scorePlayer1 %}
+                                                <span class="badge {% if playerScore > opponentScore %}bg-success{% elseif playerScore < opponentScore %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ playerScore }}:{{ opponentScore }}
+                                                </span>
+                                                
+                                                {% if match.eloChange is defined %}
+                                                    {% set eloChange = match.player1Id == player.id 
+                                                        ? (match.eloChange.player1 is defined ? match.eloChange.player1 : match.eloChange) 
+                                                        : (match.eloChange.player2 is defined ? match.eloChange.player2 : match.eloChange) %}
+                                                    
+                                                    {% if eloChange > 0 %}
+                                                        <span class="badge bg-success ms-2">+{{ eloChange }}</span>
+                                                    {% elseif eloChange < 0 %}
+                                                        <span class="badge bg-danger ms-2">{{ eloChange }}</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary ms-2">±0</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        {% if match.notes %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">{{ match.notes }}</small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="ph-magnifying-glass" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                                <p class="mt-3 mb-0">Keine aktuellen Spiele gefunden.</p>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="ph-soccer-ball" style="font-size: 3rem; opacity: 0.5;"></i>
+                            <p class="mt-3 mb-0">Noch keine Spiele gespielt.</p>
+                            <p class="text-muted">Erfasse ein neues Spiel, um die Spielhistorie zu sehen!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ELO-Verlauf Chart
+        const eloHistory = {{ player.eloHistory|json_encode|raw }};
+        
+        if (eloHistory.length > 0) {
+            const ctx = document.getElementById('eloChartCanvas').getContext('2d');
+            
+            const timestamps = eloHistory.map(entry => new Date(entry.timestamp * 1000));
+            const ratings = eloHistory.map(entry => entry.rating);
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'ELO Rating',
+                        data: ratings,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f8f9fa'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'dd.MM.yyyy'
+                                }
+                            },
+                            ticks: {
+                                color: '#adb5bd'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: '#adb5bd'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,244 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="mb-0">{{ season.name }}</h1>
+                    {% if isActive %}
+                        <span class="badge bg-success">Aktive Saison</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Beendete Saison</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <a href="{{ url_for('seasons.list') }}" class="btn btn-secondary me-2">
+                        <i class="ph-arrow-left"></i> Zurück zur Übersicht
+                    </a>
+                    {% if isActive %}
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#endSeasonModal">
+                            <i class="ph-flag"></i> Saison beenden
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-gradient-dark text-center mb-3">
+                        <div class="card-body">
+                            <h2 class="mb-0">{{ season.statistics.totalMatches }}</h2>
+                            <small class="text-muted">Spiele gesamt</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-gradient-dark text-center mb-3">
+                        <div class="card-body">
+                            <h2 class="mb-0">{{ season.statistics.totalGoals }}</h2>
+                            <small class="text-muted">Tore gesamt</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-gradient-dark text-center mb-3">
+                        <div class="card-body">
+                            <h2 class="mb-0">{{ season.startDate|date('d.m.Y') }}</h2>
+                            <small class="text-muted">Beginn</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-gradient-dark text-center mb-3">
+                        <div class="card-body">
+                            <h2 class="mb-0">{{ season.endDate ? season.endDate|date('d.m.Y') : season.startDate|date('t.m.Y') }}</h2>
+                            <small class="text-muted">{{ season.endDate ? 'Ende' : 'Ende (voraussichtlich)' }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if season.statistics.highestScore %}
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card bg-gradient-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">Höchster Sieg</h5>
+                                {% set winner = player_service.getPlayerById(season.statistics.highestScore.winnerId) %}
+                                {% set loser = player_service.getPlayerById(season.statistics.highestScore.loserId) %}
+                                <p class="mb-0">
+                                    <strong>{{ winner.displayName }}</strong> vs. {{ loser.displayName }}
+                                    <span class="badge bg-success ms-2">{{ season.statistics.highestScore.score }}</span>
+                                    <small class="text-muted ms-2">({{ season.statistics.highestScore.date|date('d.m.Y') }})</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <h3 class="mb-3">Tabelle</h3>
+            <div class="table-responsive mb-4">
+                <table class="table table-dark table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Spieler</th>
+                            <th class="text-center">Spiele</th>
+                            <th class="text-center">S</th>
+                            <th class="text-center">U</th>
+                            <th class="text-center">N</th>
+                            <th class="text-center">Tore</th>
+                            <th class="text-center">Gegentore</th>
+                            <th class="text-center">Diff</th>
+                            <th class="text-center">Punkte</th>
+                            {% if not isActive %}
+                            <th class="text-center">Final-ELO</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in standings %}
+                            <tr>
+                                <td>{{ player.rank }}</td>
+                                <td>
+                                    <a href="{{ url_for('players.view', {'id': player.playerId}) }}" class="text-decoration-none text-light">
+                                        {% if player.avatar %}
+                                            <img src="{{ player.avatar }}" class="rounded-circle me-2" width="30" height="30" alt="{{ player.name }}">
+                                        {% else %}
+                                            <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px;">
+                                                {{ player.name|slice(0, 1)|upper }}
+                                            </span>
+                                        {% endif %}
+                                        {{ player.displayName }}
+                                    </a>
+                                </td>
+                                <td class="text-center">{{ player.matches }}</td>
+                                <td class="text-center">{{ player.wins }}</td>
+                                <td class="text-center">{{ player.draws }}</td>
+                                <td class="text-center">{{ player.losses }}</td>
+                                <td class="text-center">{{ player.goalsScored }}</td>
+                                <td class="text-center">{{ player.goalsConceded }}</td>
+                                <td class="text-center">
+                                    {% if player.goalDifference > 0 %}
+                                        <span class="text-success">+{{ player.goalDifference }}</span>
+                                    {% elseif player.goalDifference < 0 %}
+                                        <span class="text-danger">{{ player.goalDifference }}</span>
+                                    {% else %}
+                                        <span class="text-secondary">0</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <strong>{{ player.points }}</strong>
+                                </td>
+                                {% if not isActive %}
+                                <td class="text-center">
+                                    {% if player.finalElo is defined %}
+                                        <span class="badge bg-info">{{ player.finalElo }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="{% if not isActive %}11{% else %}10{% endif %}" class="text-center">Noch keine Spieler in der Tabelle</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <h3 class="mb-3">Letzte Spiele</h3>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Spieler</th>
+                            <th>Ergebnis</th>
+                            <th>Notizen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recentMatches|length > 0 %}
+                            {% for match in recentMatches %}
+                                <tr>
+                                    <td>{{ match.playedAt|date('d.m.Y H:i') }}</td>
+                                    <td>
+                                        {% set player1 = player_service.getPlayerById(match.player1Id) %}
+                                        {% set player2 = player_service.getPlayerById(match.player2Id) %}
+                                        
+                                        <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none text-light">
+                                            {% if player1.avatar %}
+                                                <img src="{{ player1.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player1.name }}">
+                                            {% else %}
+                                                <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                    {{ player1.name|slice(0, 1)|upper }}
+                                                </span>
+                                            {% endif %}
+                                            {{ player1.displayName ?? 'Unbekannt' }}
+                                        </a> 
+                                        vs 
+                                        <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none text-light">
+                                            {% if player2.avatar %}
+                                                <img src="{{ player2.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player2.name }}">
+                                            {% else %}
+                                                <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                    {{ player2.name|slice(0, 1)|upper }}
+                                                </span>
+                                            {% endif %}
+                                            {{ player2.displayName ?? 'Unbekannt' }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if match.player1IsWinner %}bg-success{% elseif match.player2IsWinner %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ match.scorePlayer1 }}:{{ match.scorePlayer2 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if match.notes %}
+                                            <small>{{ match.notes }}</small>
+                                        {% else %}
+                                            <small class="text-muted">-</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">Noch keine Spiele in dieser Saison</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    {% if isActive %}
+    <!-- Modal zum Beenden der Saison -->
+    <div class="modal fade" id="endSeasonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Saison beenden</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Möchten Sie die Saison <strong>{{ season.name }}</strong> wirklich beenden?</p>
+                    <p>Dies kann nicht rückgängig gemacht werden.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <form action="{{ url_for('seasons.end', {'id': season.id}) }}" method="post">
+                        <button type="submit" class="btn btn-danger">Saison beenden</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %} 

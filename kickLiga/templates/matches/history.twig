@@ -1,0 +1,83 @@
+{% extends "layout.twig" %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ title }}</h4>
+                    <a href="{{ url_for('matches.create') }}" class="btn btn-success">
+                        <i class="ph-soccer-ball"></i> Neues Spiel erfassen
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if matches|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th>
+                                        <th>Spieler 1</th>
+                                        <th>Spieler 2</th>
+                                        <th>Ergebnis</th>
+                                        <th>ELO-Änderung</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for match in matches %}
+                                        <tr>
+                                            <td>{{ match.playedAt|date('d.m.Y H:i') }}</td>
+                                            <td>
+                                                <a href="{{ url_for('players.view', {'id': match.player1Id}) }}">
+                                                    {{ player_service.getPlayerById(match.player1Id).displayName ?? 'Unbekannt' }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('players.view', {'id': match.player2Id}) }}">
+                                                    {{ player_service.getPlayerById(match.player2Id).displayName ?? 'Unbekannt' }}
+                                                </a>
+                                            </td>
+                                            <td>{{ match.scorePlayer1 }} : {{ match.scorePlayer2 }}</td>
+                                            <td>
+                                                {% if match.eloChange is iterable %}
+                                                    <span class="{{ match.eloChange.player1 > 0 ? 'text-success' : (match.eloChange.player1 < 0 ? 'text-danger' : '') }}">
+                                                        {{ match.eloChange.player1 > 0 ? '+' : '' }}{{ match.eloChange.player1 }}
+                                                    </span>
+                                                    /
+                                                    <span class="{{ match.eloChange.player2 > 0 ? 'text-success' : (match.eloChange.player2 < 0 ? 'text-danger' : '') }}">
+                                                        {{ match.eloChange.player2 > 0 ? '+' : '' }}{{ match.eloChange.player2 }}
+                                                    </span>
+                                                {% else %}
+                                                    {% if match.eloChange > 0 %}
+                                                        <span class="text-success">+{{ match.eloChange }}</span>
+                                                    {% elseif match.eloChange < 0 %}
+                                                        <span class="text-danger">{{ match.eloChange }}</span>
+                                                    {% else %}
+                                                        <span class="text-secondary">0</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if match.notes %}
+                                                    <span class="text-info">{{ match.notes }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center" role="alert">
+                            <i class="ph-info ph-2x mb-2"></i><br>
+                            Bisher wurden keine Spiele erfasst.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

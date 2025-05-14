@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }}{% endblock %} - Kickerliga Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/phosphor-icons@1.4.2/src/css/icons.css">
+    <style>
+        :root {
+            --bs-body-bg: #121212;
+            --bs-body-color: #f8f9fa;
+            --bs-heading-color: #f8f9fa;
+            --bs-primary: #0d6efd;
+            --bs-secondary: #6c757d;
+            --bs-tertiary-bg: #2a2a2a;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bg-gradient-dark {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+        }
+        
+        .navbar {
+            background: linear-gradient(90deg, #292929 0%, #151515 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1c1c1c 100%);
+            border: 1px solid #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .table {
+            color: #f8f9fa;
+        }
+        
+        .table-dark {
+            background-color: #1a1a1a;
+        }
+        
+        .form-control, .form-select {
+            background-color: #272727;
+            border: 1px solid #444;
+            color: #f8f9fa;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: #333;
+            color: #fff;
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+        }
+        
+        footer {
+            background: linear-gradient(90deg, #1e1e1e 0%, #121212 100%);
+            margin-top: auto;
+        }
+        
+        /* ELO Badge Farben */
+        .elo-badge-1 {
+            background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%); /* Gold */
+        }
+        
+        .elo-badge-2 {
+            background: linear-gradient(135deg, #c0c0c0 0%, #9e9e9e 100%); /* Silber */
+        }
+        
+        .elo-badge-3 {
+            background: linear-gradient(135deg, #cd7f32 0%, #a45e06 100%); /* Bronze */
+        }
+        
+        main {
+            flex: 1;
+        }
+        
+        .modal-content {
+            background-color: #2a2a2a;
+            color: #f8f9fa;
+        }
+        
+        .text-muted {
+            color: #adb5bd !important;
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <i class="ph-table"></i> Fietzball
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}"><i class="ph-house"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('players.list') }}"><i class="ph-users"></i> Spieler</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('matches.history') }}"><i class="ph-soccer-ball"></i> Spiele</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('seasons.list') }}"><i class="ph-trophy"></i> Saisons</a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}"><i class="ph-chart-line"></i> Statistiken</a>
+                    </li> -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hauptinhalt -->
+    <main class="py-5">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-3 text-center text-secondary">
+        <div class="container">
+            <p class="mb-0">
+                <small>&copy; {{ 'now'|date('Y') }} Kickerliga Management System</small>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 
