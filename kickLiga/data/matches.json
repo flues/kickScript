@@ -37,5 +37,70 @@
             "player2": -18
         },
         "notes": "Bombardiro hatte noch Hangover von Saufi gestern."
+    },
+    "match_68248eec9a579": {
+        "id": "match_68248eec9a579",
+        "player1Id": "player_68248673345da",
+        "player2Id": "player_682486a0a34bd",
+        "scorePlayer1": 10,
+        "scorePlayer2": 3,
+        "playedAt": 1747226280,
+        "eloChange": {
+            "player1": 20,
+            "player2": -20
+        },
+        "notes": "Einfach nicht Bombardiros Tag"
+    },
+    "match_682493e3a960d": {
+        "id": "match_682493e3a960d",
+        "player1Id": "player_682488d836b86",
+        "player2Id": "player_682493ca1a3c7",
+        "scorePlayer1": 10,
+        "scorePlayer2": 8,
+        "playedAt": 1747227540,
+        "eloChange": {
+            "player1": 18,
+            "player2": -18
+        },
+        "notes": "Handverletzung midgame bei Sinan. Überraschender Sieg für Philipp"
+    },
+    "match_682b16ecf24a7": {
+        "id": "match_682b16ecf24a7",
+        "player1Id": "player_682488d836b86",
+        "player2Id": "player_682493ca1a3c7",
+        "scorePlayer1": 10,
+        "scorePlayer2": 2,
+        "playedAt": 1747654320,
+        "eloChange": {
+            "player1": 24,
+            "player2": -24
+        },
+        "notes": "Lucky Day für Phil, selbst auf blauer Seite. \r\nBereits im Sparring hervorragende Ergebnisse seinerseits."
+    },
+    "match_682b2c54777e8": {
+        "id": "match_682b2c54777e8",
+        "player1Id": "player_682493ca1a3c7",
+        "player2Id": "player_682488d836b86",
+        "scorePlayer1": 10,
+        "scorePlayer2": 2,
+        "playedAt": 1747659780,
+        "eloChange": {
+            "player1": 34,
+            "player2": -34
+        },
+        "notes": "gg"
+    },
+    "match_682db9a1e7e77": {
+        "id": "match_682db9a1e7e77",
+        "player1Id": "player_682488d836b86",
+        "player2Id": "player_682493ca1a3c7",
+        "scorePlayer1": 10,
+        "scorePlayer2": 9,
+        "playedAt": 1747827060,
+        "eloChange": {
+            "player1": 15,
+            "player2": -15
+        },
+        "notes": "crazy close game"
     }
 }

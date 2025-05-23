@@ -38,60 +38,21 @@
         "createdAt": 1747224142,
         "lastMatch": 1747224358
     },
-    "player_68248673345da": {
-        "id": "player_68248673345da",
-        "name": "Tung Tung Tung Tung Tung Sahur",
-        "nickname": null,
-        "avatar": "https:\/\/media1.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExOHgwYmtlNGkwbG1iZGlscmR4bTZlZ3MzOGdncDVydHJ1OHk1MW5vbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/SfZZnC4IQoR77rTzlD\/giphy.webp",
-        "eloRating": 1035,
-        "statistics": {
-            "wins": 2,
-            "losses": 0,
-            "draws": 0,
-            "goalsScored": 20,
-            "goalsConceded": 15,
-            "tournamentsWon": 0,
-            "tournamentsParticipated": 0,
-            "matchesPlayed": 2
-        },
-        "achievements": [],
-        "eloHistory": [
-            {
-                "rating": 1000,
-                "timestamp": 1747224179,
-                "reason": "initial"
-            },
-            {
-                "rating": 1017,
-                "change": 17,
-                "timestamp": 1747224358,
-                "reason": "Match gegen Tralalero Tralala"
-            },
-            {
-                "rating": 1035,
-                "change": 18,
-                "timestamp": 1747224392,
-                "reason": "Match gegen Bombardiro Crocodilo"
-            }
-        ],
-        "createdAt": 1747224179,
-        "lastMatch": 1747224392
-    },
     "player_682486a0a34bd": {
         "id": "player_682486a0a34bd",
         "name": "Bombardiro Crocodilo",
         "nickname": null,
         "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExcDRxcW5odm1jem5vZzBuZzNwZGl0eXhudGVva21zYXJ3am5xN2YwMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/fkNqwkJArJ4FIJVWQK\/giphy.webp",
-        "eloRating": 955,
+        "eloRating": 935,
         "statistics": {
             "wins": 0,
-            "losses": 2,
+            "losses": 3,
             "draws": 0,
-            "goalsScored": 8,
-            "goalsConceded": 20,
+            "goalsScored": 11,
+            "goalsConceded": 30,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 2
+            "matchesPlayed": 3
         },
         "achievements": [],
         "eloHistory": [
@@ -111,26 +72,32 @@
                 "change": -18,
                 "timestamp": 1747224392,
                 "reason": "Match gegen Tung Tung Tung Tung Tung Sahur"
+            },
+            {
+                "rating": 935,
+                "change": -20,
+                "timestamp": 1747226348,
+                "reason": "Match gegen Tung Tung Tung Tung Tung Sahur"
             }
         ],
         "createdAt": 1747224224,
-        "lastMatch": 1747224392
+        "lastMatch": 1747226348
     },
     "player_682488d836b86": {
         "id": "player_682488d836b86",
         "name": "Phil",
         "nickname": null,
-        "avatar": "https:\/\/media1.giphy.com\/media\/WRuBiZKB6xgsS9DrFA\/giphy.webp?cid=ecf05e47xsvmoazefjf0n5ufzyb8ajvdbh4pk0nmmcfvss5u&ep=v1_gifs_search&rid=giphy.webp&ct=g",
-        "eloRating": 1000,
+        "avatar": "https:\/\/media4.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExb3UwN2duNzFwZXZ2b3ExY2NyZmkzeXNnY2x1cWc5aTJwcnE2ZHZzaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/13w5HmyiuaZ224\/200.webp",
+        "eloRating": 1023,
         "statistics": {
-            "wins": 0,
-            "losses": 0,
+            "wins": 3,
+            "losses": 1,
             "draws": 0,
-            "goalsScored": 0,
-            "goalsConceded": 0,
+            "goalsScored": 32,
+            "goalsConceded": 29,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 0
+            "matchesPlayed": 4
         },
         "achievements": [],
         "eloHistory": [
@@ -138,9 +105,84 @@
                 "rating": 1000,
                 "timestamp": 1747224792,
                 "reason": "initial"
+            },
+            {
+                "rating": 1018,
+                "change": 18,
+                "timestamp": 1747227619,
+                "reason": "Match gegen Sinan"
+            },
+            {
+                "rating": 1042,
+                "change": 24,
+                "timestamp": 1747654380,
+                "reason": "Match gegen zSinanProxGAMERhdLP"
+            },
+            {
+                "rating": 1008,
+                "change": -34,
+                "timestamp": 1747659860,
+                "reason": "Match gegen zSinanProxGAMERhdLP"
+            },
+            {
+                "rating": 1023,
+                "change": 15,
+                "timestamp": 1747827105,
+                "reason": "Match gegen zSinanProxGAMERhdLP"
             }
         ],
         "createdAt": 1747224792,
-        "lastMatch": null
+        "lastMatch": 1747827105
+    },
+    "player_682493ca1a3c7": {
+        "id": "player_682493ca1a3c7",
+        "name": "zSinanProxGAMERhdLP",
+        "nickname": null,
+        "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExbDAwODR3bnVlOG5zMW90a2NoajllZTB3czcyam5ma2IwejEzdGtkayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/l4jGvc7xVeDQWMt4ak\/giphy.gif",
+        "eloRating": 977,
+        "statistics": {
+            "wins": 1,
+            "losses": 3,
+            "draws": 0,
+            "goalsScored": 29,
+            "goalsConceded": 32,
+            "tournamentsWon": 0,
+            "tournamentsParticipated": 0,
+            "matchesPlayed": 4
+        },
+        "achievements": [],
+        "eloHistory": [
+            {
+                "rating": 1000,
+                "timestamp": 1747227594,
+                "reason": "initial"
+            },
+            {
+                "rating": 982,
+                "change": -18,
+                "timestamp": 1747227619,
+                "reason": "Match gegen Phil"
+            },
+            {
+                "rating": 958,
+                "change": -24,
+                "timestamp": 1747654380,
+                "reason": "Match gegen Phil"
+            },
+            {
+                "rating": 992,
+                "change": 34,
+                "timestamp": 1747659860,
+                "reason": "Match gegen Phil"
+            },
+            {
+                "rating": 977,
+                "change": -15,
+                "timestamp": 1747827105,
+                "reason": "Match gegen Phil"
+            }
+        ],
+        "createdAt": 1747227594,
+        "lastMatch": 1747827105
     }
 }

@@ -1,7 +1,7 @@
 {
-    "season_682486bdc92dd": {
-        "id": "season_682486bdc92dd",
-        "name": "OG first season",
+    "season_682b172598d87": {
+        "id": "season_682b172598d87",
+        "name": "Richtige Mai Season",
         "startDate": 1746050400,
         "endDate": null,
         "isActive": true,
@@ -11,27 +11,13 @@
                 "name": "Tralalero Tralala",
                 "displayName": "Tralalero Tralala",
                 "avatar": "https:\/\/media0.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExYjRhNWx3dXM1dmRhcmN0MXRkcnBxZHZxaWx1YXViYjhmYWZkczRjcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/XsNAXQl1E8ig8MHAhf\/giphy.gif",
-                "matches": 2,
-                "wins": 1,
-                "draws": 0,
-                "losses": 1,
-                "goalsScored": 19,
-                "goalsConceded": 12,
-                "goalDifference": 7,
-                "points": 3
-            },
-            "player_68248673345da": {
-                "playerId": "player_68248673345da",
-                "name": "Tung Tung Tung Tung Tung Sahur",
-                "displayName": "Tung Tung Tung Tung Tung Sahur",
-                "avatar": "https:\/\/media1.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExOHgwYmtlNGkwbG1iZGlscmR4bTZlZ3MzOGdncDVydHJ1OHk1MW5vbCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/SfZZnC4IQoR77rTzlD\/giphy.webp",
                 "matches": 1,
                 "wins": 1,
                 "draws": 0,
                 "losses": 0,
                 "goalsScored": 10,
-                "goalsConceded": 9,
-                "goalDifference": 1,
+                "goalsConceded": 2,
+                "goalDifference": 8,
                 "points": 3
             },
             "player_682486a0a34bd": {
@@ -47,11 +33,39 @@
                 "goalsConceded": 10,
                 "goalDifference": -8,
                 "points": 0
+            },
+            "player_682488d836b86": {
+                "playerId": "player_682488d836b86",
+                "name": "Phil",
+                "displayName": "Phil",
+                "avatar": "https:\/\/media4.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExb3UwN2duNzFwZXZ2b3ExY2NyZmkzeXNnY2x1cWc5aTJwcnE2ZHZzaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/13w5HmyiuaZ224\/200.webp",
+                "matches": 3,
+                "wins": 2,
+                "draws": 0,
+                "losses": 1,
+                "goalsScored": 22,
+                "goalsConceded": 20,
+                "goalDifference": 2,
+                "points": 6
+            },
+            "player_682493ca1a3c7": {
+                "playerId": "player_682493ca1a3c7",
+                "name": "zSinanProxGAMERhdLP",
+                "displayName": "zSinanProxGAMERhdLP",
+                "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExbDAwODR3bnVlOG5zMW90a2NoajllZTB3czcyam5ma2IwejEzdGtkayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/l4jGvc7xVeDQWMt4ak\/giphy.gif",
+                "matches": 3,
+                "wins": 1,
+                "draws": 0,
+                "losses": 2,
+                "goalsScored": 20,
+                "goalsConceded": 22,
+                "goalDifference": -2,
+                "points": 3
             }
         },
         "statistics": {
-            "totalMatches": 2,
-            "totalGoals": 31,
+            "totalMatches": 4,
+            "totalGoals": 54,
             "highestScore": {
                 "matchId": "match_682486f6eb8e2",
                 "winnerId": "player_6824864e806f9",
