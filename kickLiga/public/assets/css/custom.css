@@ -77,6 +77,17 @@ body {
 }
 
 /* Tabellen transparenter */
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 7px;
+    overflow: hidden;
+}
+.table-responsive > table {
+    margin-bottom:0;
+}
 .table-dark {
     background:transparent !important;
     backdrop-filter: blur(10px) !important;
@@ -84,7 +95,7 @@ body {
 
 .table-dark th,
 .table-dark td {
-    background: rgba(33, 37, 41, 0.7) !important;
+    background: rgb(33 37 41 / 20%) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
