@@ -29,16 +29,37 @@
                                         <tr>
                                             <td>{{ match.playedAt|date('d.m.Y H:i') }}</td>
                                             <td>
-                                                <a href="{{ url_for('players.view', {'id': match.player1Id}) }}">
-                                                    {{ player_service.getPlayerById(match.player1Id).displayName ?? 'Unbekannt' }}
-                                                </a>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="player-side-badge side-{{ match.player1Side }}">
+                                                        {{ match.player1Side == 'blau' ? '🔵' : '⚪' }}
+                                                    </span>
+                                                    <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none">
+                                                        {{ player_service.getPlayerById(match.player1Id).displayName ?? 'Unbekannt' }}
+                                                    </a>
+                                                </div>
                                             </td>
                                             <td>
-                                                <a href="{{ url_for('players.view', {'id': match.player2Id}) }}">
-                                                    {{ player_service.getPlayerById(match.player2Id).displayName ?? 'Unbekannt' }}
-                                                </a>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="player-side-badge side-{{ match.player2Side }}">
+                                                        {{ match.player2Side == 'blau' ? '🔵' : '⚪' }}
+                                                    </span>
+                                                    <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none">
+                                                        {{ player_service.getPlayerById(match.player2Id).displayName ?? 'Unbekannt' }}
+                                                    </a>
+                                                </div>
                                             </td>
-                                            <td>{{ match.scorePlayer1 }} : {{ match.scorePlayer2 }}</td>
+                                            <td>
+                                                <div class="match-result">
+                                                    {{ match.scorePlayer1 }} : {{ match.scorePlayer2 }}
+                                                    {% if match.isPlayer1Winner %}
+                                                        <small class="text-success ms-1">(Sieg {{ match.player1Side == 'blau' ? '🔵' : '⚪' }})</small>
+                                                    {% elseif match.isPlayer2Winner %}
+                                                        <small class="text-success ms-1">(Sieg {{ match.player2Side == 'blau' ? '🔵' : '⚪' }})</small>
+                                                    {% else %}
+                                                        <small class="text-secondary ms-1">(Unentschieden)</small>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
                                             <td>
                                                 {% if match.eloChange is iterable %}
                                                     <span class="{{ match.eloChange.player1 > 0 ? 'text-success' : (match.eloChange.player1 < 0 ? 'text-danger' : '') }}">
@@ -70,6 +91,61 @@
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Seitenstatistik-Übersicht -->
+                        {% if matches|length > 5 %}
+                            <div class="row mt-4">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">
+                                                <i class="ph-chart-bar"></i> Seitenstatistik
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            {% set blueWins = 0 %}
+                                            {% set whiteWins = 0 %}
+                                            {% set totalGames = 0 %}
+                                            
+                                            {% for match in matches %}
+                                                {% if not match.isDraw %}
+                                                    {% set totalGames = totalGames + 1 %}
+                                                    {% if match.winningSide == 'blau' %}
+                                                        {% set blueWins = blueWins + 1 %}
+                                                    {% elseif match.winningSide == 'weiss' %}
+                                                        {% set whiteWins = whiteWins + 1 %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            
+                                            {% if totalGames > 0 %}
+                                                <div class="side-comparison-widget">
+                                                    <div class="side-comparison-stats">
+                                                        <div class="blue-stats">
+                                                            <h3>🔵 Blaue Seite</h3>
+                                                            <p class="mb-1"><strong>{{ blueWins }} Siege</strong></p>
+                                                            <p class="mb-0">{{ ((blueWins / totalGames) * 100)|round(1) }}% Win-Rate</p>
+                                                        </div>
+                                                        <div class="vs-divider">VS</div>
+                                                        <div class="white-stats">
+                                                            <h3>⚪ Weiße Seite</h3>
+                                                            <p class="mb-1"><strong>{{ whiteWins }} Siege</strong></p>
+                                                            <p class="mb-0">{{ ((whiteWins / totalGames) * 100)|round(1) }}% Win-Rate</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-center mt-3">
+                                                        <small class="text-muted">
+                                                            Basierend auf {{ totalGames }} entschiedenen Spielen
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
                     {% else %}
                         <div class="alert alert-info text-center" role="alert">
                             <i class="ph-info ph-2x mb-2"></i><br>

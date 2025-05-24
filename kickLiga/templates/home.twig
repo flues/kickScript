@@ -137,7 +137,7 @@
     {% endif %}
     
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Top Spieler</h5>
@@ -194,7 +194,7 @@
             </div>
         </div>
         
-        <div class="col-md-6">
+        <div class="col-md-8">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Letzte Spiele</h5>
@@ -220,27 +220,47 @@
                                                 {% set player1 = player_service.getPlayerById(match.player1Id) %}
                                                 {% set player2 = player_service.getPlayerById(match.player2Id) %}
                                                 
-                                                <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none text-light">
-                                                    {% if player1.avatar %}
-                                                        <img src="{{ player1.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player1.name }}">
-                                                    {% else %}
-                                                        <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
-                                                            {{ player1.name|slice(0, 1)|upper }}
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div class="d-flex align-items-center">
+                                                        <!-- Seitenindikator für Spieler 1 -->
+                                                        <span class="badge {% if match.player1Side == 'blau' %}bg-primary{% else %}bg-light text-dark{% endif %} me-2" 
+                                                              style="font-size: 0.7rem; min-width: 15px; height: 15px; border-radius: 50%; padding: 0;" 
+                                                              title="Spieler 1: {{ match.player1Side|title }} Seite">
                                                         </span>
-                                                    {% endif %}
-                                                    {{ player1.displayName ?? 'Unbekannt' }}
-                                                </a> 
-                                                vs 
-                                                <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none text-light">
-                                                    {% if player2.avatar %}
-                                                        <img src="{{ player2.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player2.name }}">
-                                                    {% else %}
-                                                        <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
-                                                            {{ player2.name|slice(0, 1)|upper }}
+                                                        
+                                                        <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none text-light">
+                                                            {% if player1.avatar %}
+                                                                <img src="{{ player1.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player1.name }}">
+                                                            {% else %}
+                                                                <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                                    {{ player1.name|slice(0, 1)|upper }}
+                                                                </span>
+                                                            {% endif %}
+                                                            {{ player1.displayName ?? 'Unbekannt' }}
+                                                        </a>
+                                                    </div>
+                                                    
+                                                    <span class="mx-2 text-muted">vs</span>
+                                                    
+                                                    <div class="d-flex align-items-center">
+                                                        <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none text-light">
+                                                            {% if player2.avatar %}
+                                                                <img src="{{ player2.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player2.name }}">
+                                                            {% else %}
+                                                                <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
+                                                                    {{ player2.name|slice(0, 1)|upper }}
+                                                                </span>
+                                                            {% endif %}
+                                                            {{ player2.displayName ?? 'Unbekannt' }}
+                                                        </a>
+                                                        
+                                                        <!-- Seitenindikator für Spieler 2 -->
+                                                        <span class="badge {% if match.player2Side == 'blau' %}bg-primary{% else %}bg-light text-dark{% endif %} ms-2" 
+                                                              style="font-size: 0.7rem; min-width: 15px; height: 15px; border-radius: 50%; padding: 0;" 
+                                                              title="Spieler 2: {{ match.player2Side|title }} Seite">
                                                         </span>
-                                                    {% endif %}
-                                                    {{ player2.displayName ?? 'Unbekannt' }}
-                                                </a>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td>
                                                 <span class="badge {% if match.player1IsWinner %}bg-success{% elseif match.player2IsWinner %}bg-danger{% else %}bg-secondary{% endif %}">

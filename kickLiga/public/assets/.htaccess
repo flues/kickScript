@@ -1,0 +1,42 @@
+# Statische Assets für Kickerliga Management
+# Cache-Control für CSS, JS und Bilder
+
+<IfModule mod_expires.c>
+    ExpiresActive on
+    
+    # CSS und JavaScript - 7 Tage
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType text/javascript "access plus 7 days"
+    
+    # Bilder - 30 Tage
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/jpg "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/gif "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Füge Cache-Control Header hinzu
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|webp)$">
+        Header set Cache-Control "public, max-age=604800"
+    </FilesMatch>
+</IfModule>
+
+# MIME-Types sicherstellen
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType image/svg+xml .svg
+    AddType image/webp .webp
+</IfModule>
+
+# Kompression aktivieren
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule> 

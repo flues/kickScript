@@ -60,7 +60,7 @@ class PlayerController
     }
 
     /**
-     * Spielerdetails anzeigen
+     * Einzelnen Spieler anzeigen
      */
     public function viewPlayer(Request $request, Response $response, array $args): Response
     {
@@ -83,6 +83,11 @@ class PlayerController
         
         // Hole die letzten Matches des Spielers, wenn der MatchService verfügbar ist
         $recentMatches = [];
+        $allMatches = [];
+        $sideStatistics = [];
+        $preferredSide = [];
+        $sideChartData = [];
+        
         if ($this->matchService !== null) {
             $allMatches = $this->matchService->getMatchesByPlayerId($playerId);
             
@@ -91,8 +96,13 @@ class PlayerController
                 return $b->getPlayedAt()->getTimestamp() - $a->getPlayedAt()->getTimestamp();
             });
             
-            // Begrenze auf die letzten 5 Matches
+            // Begrenze auf die letzten 5 Matches für die Anzeige
             $recentMatches = array_slice($allMatches, 0, 5);
+            
+            // Berechne Seitenstatistiken
+            $sideStatistics = $this->playerService->calculateSideStatistics($playerId, $allMatches);
+            $preferredSide = $this->playerService->getPreferredSide($sideStatistics);
+            $sideChartData = $this->playerService->prepareSideComparisonChartData($sideStatistics);
         }
         
         // Bereite ELO-Historie für Chart.js vor
@@ -111,7 +121,11 @@ class PlayerController
             'player' => $player,
             'recentMatches' => $recentMatches,
             'player_service' => $this->playerService,
-            'eloChartData' => $eloChartData
+            'eloChartData' => $eloChartData,
+            'sideStatistics' => $sideStatistics,
+            'preferredSide' => $preferredSide,
+            'sideChartData' => $sideChartData,
+            'totalMatches' => count($allMatches)
         ]);
     }
 

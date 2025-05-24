@@ -25,4 +25,5 @@ return array(
     'Fig\\Http\\Message\\' => array($vendorDir . '/fig/http-message-util/src'),
     'FastRoute\\' => array($vendorDir . '/nikic/fast-route/src'),
     'DI\\' => array($vendorDir . '/php-di/php-di/src'),
+    'App\\' => array($baseDir . '/app'),
 );

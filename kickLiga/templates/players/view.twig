@@ -32,7 +32,7 @@
                     {% endif %}
                     
                     <div class="mb-3">
-                        <span class="badge bg-primary fs-5 px-3 py-2">{{ player.eloRating }} ELO</span>
+                        <div class="elo-rating-display">{{ player.eloRating }} ELO</div>
                     </div>
                     
                     <div class="text-start mt-4">
@@ -129,7 +129,7 @@
                     </div>
                     
                     <h5 class="mt-4 mb-3">ELO-Verlauf</h5>
-                    <div class="bg-dark p-3 rounded mb-3">
+                    <div class="chart-container mb-3">
                         {% if eloChartData|length > 1 %}
                             <canvas id="eloChartCanvas" height="200"></canvas>
                         {% else %}
@@ -144,8 +144,86 @@
             </div>
         </div>
         
+        <!-- Seitenstatistiken -->
+        {% if totalMatches > 0 and sideStatistics %}
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="ph-arrows-split"></i> Statistiken nach Tischseite
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Bevorzugte Seite Übersicht -->
+                        {% if preferredSide.side %}
+                            <div class="alert alert-info mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fs-4">
+                                        {{ preferredSide.side == 'blau' ? '🔵' : '⚪' }}
+                                    </span>
+                                    <div>
+                                        <strong>Bevorzugte Seite: {{ preferredSide.side == 'blau' ? 'Blau' : 'Weiß' }}</strong><br>
+                                        <small>{{ preferredSide.advantage }}% höhere Win-Rate</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Seitenvergleich -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <div class="side-stats-card p-3 text-center {{ preferredSide.side == 'blau' ? 'preferred-side' : '' }}">
+                                    <div class="side-stats-header blue">
+                                        <span class="side-icon">🔵</span>
+                                        <span>Blaue Seite</span>
+                                    </div>
+                                    <div class="win-rate-display blue">
+                                        {{ sideStatistics.blau.winRate }}%
+                                    </div>
+                                    <div class="text-muted">
+                                        {{ sideStatistics.blau.wins }}/{{ sideStatistics.blau.matchesPlayed }} Siege
+                                    </div>
+                                    <hr class="my-2">
+                                    <small class="text-muted">
+                                        ⚽ {{ sideStatistics.blau.avgGoalsScored }}<br>
+                                        🛡️ {{ sideStatistics.blau.avgGoalsConceded }}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="side-stats-card p-3 text-center {{ preferredSide.side == 'weiss' ? 'preferred-side' : '' }}">
+                                    <div class="side-stats-header white">
+                                        <span class="side-icon">⚪</span>
+                                        <span>Weiße Seite</span>
+                                    </div>
+                                    <div class="win-rate-display white">
+                                        {{ sideStatistics.weiss.winRate }}%
+                                    </div>
+                                    <div class="text-muted">
+                                        {{ sideStatistics.weiss.wins }}/{{ sideStatistics.weiss.matchesPlayed }} Siege
+                                    </div>
+                                    <hr class="my-2">
+                                    <small class="text-muted">
+                                        ⚽ {{ sideStatistics.weiss.avgGoalsScored }}<br>
+                                        🛡️ {{ sideStatistics.weiss.avgGoalsConceded }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chart-Container -->
+                        {% if sideStatistics.blau.matchesPlayed > 0 or sideStatistics.weiss.matchesPlayed > 0 %}
+                            <div class="chart-container side-distribution-chart">
+                                <canvas id="sideComparisonChart" width="400" height="200"></canvas>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
         <!-- Achievements -->
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -159,7 +237,7 @@
                     {% if player.achievements|length > 0 %}
                         <div class="row">
                             {% for achievement in player.achievements %}
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-12 mb-3">
                                     <div class="card bg-gradient-dark border-warning">
                                         <div class="card-body p-3">
                                             <div class="d-flex align-items-center mb-2">
@@ -197,7 +275,7 @@
         </div>
         
         <!-- Letzte Spiele -->
-        <div class="col-lg-6 mb-4">
+        <div class="col-lg-4 mb-4">
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Letzte Spiele</h5>
@@ -208,16 +286,28 @@
                         {% if recentMatches|length > 0 %}
                             <div class="list-group list-group-flush">
                                 {% for match in recentMatches %}
-                                    <div class="list-group-item bg-dark">
+                                    <div class="list-group-item bg-dark match-history-item">
+                                        <div class="match-date">{{ match.playedAt|date('d.m.Y H:i') }}</div>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <span class="text-muted me-2">{{ match.playedAt|date('d.m.Y') }}</span>
+                                            <div class="player-vs">
                                                 {% set opponent = match.player1Id == player.id 
                                                     ? player_service.getPlayerById(match.player2Id) 
                                                     : player_service.getPlayerById(match.player1Id) %}
-                                                <strong>vs. {{ opponent.displayName }}</strong>
+                                                {% set playerSide = match.getPlayerSide(player.id) %}
+                                                {% set opponentSide = match.getOpponentSide(player.id) %}
+                                                
+                                                <span class="player-side-badge side-{{ playerSide }}">
+                                                    {{ playerSide == 'blau' ? '🔵' : '⚪' }} {{ player.displayName }}
+                                                </span>
+                                                <span class="vs-separator">vs.</span>
+                                                <span class="player-side-badge side-{{ opponentSide }}">
+                                                    {{ opponentSide == 'blau' ? '🔵' : '⚪' }} 
+                                                    <a href="{{ url_for('players.view', {'id': opponent.id}) }}" class="text-decoration-none text-light">
+                                                        {{ opponent.displayName }}
+                                                    </a>
+                                                </span>
                                             </div>
-                                            <div>
+                                            <div class="match-result">
                                                 {% set playerScore = match.player1Id == player.id ? match.scorePlayer1 : match.scorePlayer2 %}
                                                 {% set opponentScore = match.player1Id == player.id ? match.scorePlayer2 : match.scorePlayer1 %}
                                                 <span class="badge {% if playerScore > opponentScore %}bg-success{% elseif playerScore < opponentScore %}bg-danger{% else %}bg-secondary{% endif %}">
@@ -269,6 +359,9 @@
 
 {% block scripts %}
 <script type="application/json" id="eloChartData">{{ eloChartData|json_encode|raw }}</script>
+{% if sideChartData %}
+<script type="application/json" id="sideChartData">{{ sideChartData|json_encode|raw }}</script>
+{% endif %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // ELO-Verlauf Chart
@@ -276,59 +369,204 @@
         const eloChartData = JSON.parse(eloDataElement.textContent);
         
         if (eloChartData.length > 1) {
-            const ctx = document.getElementById('eloChartCanvas').getContext('2d');
-            
-            new Chart(ctx, {
+            try {
+                const ctx = document.getElementById('eloChartCanvas').getContext('2d');
+                
+                // Erstelle Labels aus den Zeitstempeln (vereinfacht)
+                const labels = eloChartData.map((point, index) => {
+                    const date = new Date(point.x);
+                    return date.toLocaleDateString('de-DE', { 
+                        day: '2-digit', 
+                        month: '2-digit'
+                    });
+                });
+                
+                // Extrahiere nur die ELO-Werte
+                const eloValues = eloChartData.map(point => point.y);
+                
+                // Erstelle das Chart mit einfacher Konfiguration
+                new Chart(ctx, {
                 type: 'line',
                 data: {
+                    labels: labels,
                     datasets: [{
                         label: 'ELO Rating',
-                        data: eloChartData,
+                        data: eloValues,
                         borderColor: '#0d6efd',
                         backgroundColor: 'rgba(13, 110, 253, 0.1)',
                         borderWidth: 2,
                         tension: 0.1,
-                        fill: true
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#0d6efd',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
                     plugins: {
                         legend: {
-                            labels: {
-                                color: '#f8f9fa'
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(33, 37, 41, 0.9)',
+                            titleColor: '#f8f9fa',
+                            bodyColor: '#f8f9fa',
+                            borderColor: '#6c757d',
+                            borderWidth: 1,
+                            callbacks: {
+                                title: function(context) {
+                                    const index = context[0].dataIndex;
+                                    const date = new Date(eloChartData[index].x);
+                                    return date.toLocaleDateString('de-DE', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric'
+                                    });
+                                },
+                                label: function(context) {
+                                    return 'ELO: ' + context.parsed.y;
+                                }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day',
-                                displayFormats: {
-                                    day: 'dd.MM.yyyy'
-                                }
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Spielverlauf',
+                                color: '#f8f9fa'
                             },
                             ticks: {
-                                color: '#adb5bd'
+                                color: '#adb5bd',
+                                maxTicksLimit: 8
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
                             }
                         },
                         y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'ELO Rating',
+                                color: '#f8f9fa'
+                            },
                             beginAtZero: false,
                             ticks: {
                                 color: '#adb5bd'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
                             }
                         }
                     }
                 }
             });
+            } catch (error) {
+                console.error('Fehler beim Erstellen des ELO-Diagramms:', error);
+                // Fallback: Zeige eine Fehlermeldung im Canvas-Bereich
+                const canvas = document.getElementById('eloChartCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#adb5bd';
+                ctx.font = '16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Diagramm konnte nicht geladen werden', canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        // Seitenvergleich Chart
+        const sideDataElement = document.getElementById('sideChartData');
+        if (sideDataElement) {
+            const sideChartData = JSON.parse(sideDataElement.textContent);
+            const sideCanvas = document.getElementById('sideComparisonChart');
+            
+            if (sideCanvas && sideChartData) {
+                try {
+                    const ctx2 = sideCanvas.getContext('2d');
+                    
+                    new Chart(ctx2, {
+                        type: 'bar',
+                        data: sideChartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        color: '#f8f9fa',
+                                        font: {
+                                            size: 12
+                                        },
+                                        usePointStyle: true,
+                                        pointStyle: 'rect'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(33, 37, 41, 0.9)',
+                                    titleColor: '#f8f9fa',
+                                    bodyColor: '#f8f9fa',
+                                    borderColor: '#6c757d',
+                                    borderWidth: 1,
+                                    callbacks: {
+                                        title: function(context) {
+                                            return context[0].label;
+                                        },
+                                        label: function(context) {
+                                            return context.dataset.label + ': ' + context.parsed.y;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    display: true,
+                                    ticks: {
+                                        color: '#adb5bd',
+                                        font: {
+                                            size: 11
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    display: true,
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Anzahl Spiele',
+                                        color: '#f8f9fa'
+                                    },
+                                    ticks: {
+                                        color: '#adb5bd',
+                                        stepSize: 1
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)',
+                                        drawBorder: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Fehler beim Erstellen des Seitenvergleich-Diagramms:', error);
+                }
+            }
         }
     });
 </script>

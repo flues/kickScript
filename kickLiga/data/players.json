@@ -163,7 +163,20 @@
             "tournamentsParticipated": 0,
             "matchesPlayed": 4
         },
-        "achievements": [],
+        "achievements": [
+            {
+                "id": "bad_keeper",
+                "name": "💀 Bad Keeper",
+                "description": "Meiste Gegentore in der aktuellen Saison",
+                "unlockedAt": 1748094646
+            },
+            {
+                "id": "goal_machine",
+                "name": "🚀 Tormaschine",
+                "description": "Durchschnittlich 5+ Tore pro Spiel (min. 3 Spiele)",
+                "unlockedAt": 1748094646
+            }
+        ],
         "eloHistory": [
             {
                 "rating": 1000,

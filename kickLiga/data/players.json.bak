@@ -99,7 +99,20 @@
             "tournamentsParticipated": 0,
             "matchesPlayed": 4
         },
-        "achievements": [],
+        "achievements": [
+            {
+                "id": "top_scorer",
+                "name": "⚽ Torschützenkönig",
+                "description": "Meiste erzielte Tore in der aktuellen Saison",
+                "unlockedAt": 1748019613
+            },
+            {
+                "id": "goal_machine",
+                "name": "🚀 Tormaschine",
+                "description": "Durchschnittlich 5+ Tore pro Spiel (min. 3 Spiele)",
+                "unlockedAt": 1748019613
+            }
+        ],
         "eloHistory": [
             {
                 "rating": 1000,

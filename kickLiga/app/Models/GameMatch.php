@@ -8,6 +8,11 @@ use JsonSerializable;
 
 class GameMatch implements JsonSerializable
 {
+    // Konstanten für gültige Seitenwerte
+    public const SIDE_BLUE = 'blau';
+    public const SIDE_WHITE = 'weiss';
+    public const VALID_SIDES = [self::SIDE_BLUE, self::SIDE_WHITE];
+
     private string $id;
     private string $player1Id;
     private string $player2Id;
@@ -19,6 +24,8 @@ class GameMatch implements JsonSerializable
         'player2' => 0
     ];
     private ?string $notes = null;
+    private string $player1Side = self::SIDE_BLUE;  // Default: Spieler 1 auf blauer Seite
+    private string $player2Side = self::SIDE_WHITE; // Default: Spieler 2 auf weißer Seite
 
     public function __construct(
         string $player1Id,
@@ -26,7 +33,9 @@ class GameMatch implements JsonSerializable
         int $scorePlayer1,
         int $scorePlayer2,
         ?\DateTimeImmutable $playedAt = null,
-        ?string $notes = null
+        ?string $notes = null,
+        string $player1Side = self::SIDE_BLUE,
+        string $player2Side = self::SIDE_WHITE
     ) {
         $this->id = uniqid('match_');
         $this->player1Id = $player1Id;
@@ -35,6 +44,8 @@ class GameMatch implements JsonSerializable
         $this->scorePlayer2 = $scorePlayer2;
         $this->playedAt = $playedAt ?? new \DateTimeImmutable();
         $this->notes = $notes;
+        $this->setPlayer1Side($player1Side);
+        $this->setPlayer2Side($player2Side);
     }
 
     public static function fromArray(array $data): self
@@ -49,7 +60,9 @@ class GameMatch implements JsonSerializable
             $data['scorePlayer1'],
             $data['scorePlayer2'],
             $playedAt,
-            $data['notes'] ?? null
+            $data['notes'] ?? null,
+            $data['player1Side'] ?? self::SIDE_BLUE,
+            $data['player2Side'] ?? self::SIDE_WHITE
         );
         
         if (isset($data['id'])) {
@@ -103,6 +116,71 @@ class GameMatch implements JsonSerializable
         return $this->notes;
     }
 
+    public function getPlayer1Side(): string
+    {
+        return $this->player1Side;
+    }
+
+    public function setPlayer1Side(string $side): self
+    {
+        if (!in_array($side, self::VALID_SIDES)) {
+            throw new \InvalidArgumentException("Ungültige Seite: $side. Erlaubt: " . implode(', ', self::VALID_SIDES));
+        }
+        $this->player1Side = $side;
+        return $this;
+    }
+
+    public function getPlayer2Side(): string
+    {
+        return $this->player2Side;
+    }
+
+    public function setPlayer2Side(string $side): self
+    {
+        if (!in_array($side, self::VALID_SIDES)) {
+            throw new \InvalidArgumentException("Ungültige Seite: $side. Erlaubt: " . implode(', ', self::VALID_SIDES));
+        }
+        $this->player2Side = $side;
+        return $this;
+    }
+
+    public function getPlayerSide(string $playerId): ?string
+    {
+        if ($this->player1Id === $playerId) {
+            return $this->player1Side;
+        } elseif ($this->player2Id === $playerId) {
+            return $this->player2Side;
+        }
+        return null;
+    }
+
+    public function getOpponentSide(string $playerId): ?string
+    {
+        if ($this->player1Id === $playerId) {
+            return $this->player2Side;
+        } elseif ($this->player2Id === $playerId) {
+            return $this->player1Side;
+        }
+        return null;
+    }
+
+    public function hasValidSideAssignment(): bool
+    {
+        return $this->player1Side !== $this->player2Side;
+    }
+
+    public function setSides(string $player1Side, string $player2Side): self
+    {
+        $this->setPlayer1Side($player1Side);
+        $this->setPlayer2Side($player2Side);
+        
+        if (!$this->hasValidSideAssignment()) {
+            throw new \InvalidArgumentException("Beide Spieler können nicht auf derselben Seite spielen.");
+        }
+        
+        return $this;
+    }
+
     public function setEloChanges(int $player1EloChange, int $player2EloChange): self
     {
         $this->eloChange['player1'] = $player1EloChange;
@@ -143,6 +221,18 @@ class GameMatch implements JsonSerializable
             return $this->player1Id;
         }
         return null;
+    }
+
+    public function getWinningSide(): ?string
+    {
+        $winnerId = $this->getWinnerId();
+        return $winnerId ? $this->getPlayerSide($winnerId) : null;
+    }
+
+    public function getLosingSide(): ?string
+    {
+        $loserId = $this->getLoserId();
+        return $loserId ? $this->getPlayerSide($loserId) : null;
     }
 
     public function hasPlayer(string $playerId): bool
@@ -187,6 +277,8 @@ class GameMatch implements JsonSerializable
             'playedAt' => $this->playedAt ? $this->playedAt->getTimestamp() : null,
             'eloChange' => $this->eloChange,
             'notes' => $this->notes,
+            'player1Side' => $this->player1Side,
+            'player2Side' => $this->player2Side,
         ];
     }
 } 

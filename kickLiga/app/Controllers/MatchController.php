@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\GameMatch;
 use App\Services\MatchService;
 use App\Services\PlayerService;
 use App\Services\SeasonService;
@@ -71,7 +72,8 @@ class MatchController
         return $this->view->render($response, 'matches/create.twig', [
             'title' => 'Neues Spiel erfassen',
             'players' => $players,
-            'currentTimestamp' => $currentTimestamp // An das Template übergeben
+            'currentTimestamp' => $currentTimestamp,
+            'validSides' => GameMatch::VALID_SIDES
         ]);
     }
 
@@ -88,6 +90,8 @@ class MatchController
         $scorePlayer2 = isset($data['scorePlayer2']) ? (int)$data['scorePlayer2'] : null;
         $playedAtStr = $data['playedAt'] ?? '';
         $notes = $data['notes'] ?? null;
+        $player1Side = $data['player1Side'] ?? GameMatch::SIDE_BLUE;
+        $player2Side = $data['player2Side'] ?? GameMatch::SIDE_WHITE;
 
         // Validierung
         if (empty($player1Id) || empty($player2Id)) {
@@ -100,6 +104,13 @@ class MatchController
 
         if ($scorePlayer1 === null || $scorePlayer1 < 0 || $scorePlayer2 === null || $scorePlayer2 < 0) {
             return $this->renderCreateFormWithError($response, 'Die Ergebnisse müssen positive Zahlen sein.', $data);
+        }
+
+        // Validierung der Seitenwahl
+        try {
+            $this->matchService->validateSides($player1Side, $player2Side);
+        } catch (\RuntimeException $e) {
+            return $this->renderCreateFormWithError($response, 'Fehler bei der Seitenwahl: ' . $e->getMessage(), $data);
         }
 
         $playedAt = null;
@@ -118,7 +129,9 @@ class MatchController
                 $scorePlayer1,
                 $scorePlayer2,
                 $playedAt,
-                $notes
+                $notes,
+                $player1Side,
+                $player2Side
             );
             
             // Aktualisiere die aktive Saison mit dem neuen Match, wenn SeasonService verfügbar ist
@@ -154,7 +167,8 @@ class MatchController
             'title' => 'Neues Spiel erfassen',
             'players' => $players,
             'error' => $errorMessage,
-            'formData' => $formData
+            'formData' => $formData,
+            'validSides' => GameMatch::VALID_SIDES
         ]);
     }
 } 

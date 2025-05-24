@@ -19,10 +19,11 @@ Diese Checkliste dient zur Planung und Verfolgung der Entwicklungsfortschritte d
 - [x] DataService für JSON-Dateioperationen implementieren
    - [x] Lesefunktionen
    - [x] Schreibfunktionen mit File-Locking
+   - [x] PSR-4 Autoload-Konfiguration hinzugefügt
    - [ ] Backup-Mechanismen
 - [x] Dependency Injection Container konfigurieren
-- [ ] Fehlerbehandlung und Logging einrichten
-- [ ] Routing-Konfiguration erstellen
+- [x] Fehlerbehandlung und Logging einrichten
+- [x] Routing-Konfiguration erstellen
 
 ## 👤 Spielerverwaltung
 
@@ -58,46 +59,63 @@ Diese Checkliste dient zur Planung und Verfolgung der Entwicklungsfortschritte d
    - [x] Berechnung der erwarteten Ergebnisse
    - [x] Berechnung der Rating-Änderungen
    - [x] Tordifferenz-Modifikator
-- [ ] ELO-Historie für Spieler speichern
-- [ ] ELO-Verlauf visualisieren mit Chart.js
+- [x] ELO-Historie für Spieler speichern
+- [x] ELO-Verlauf visualisieren mit Chart.js
 - [x] Rangliste basierend auf ELO-Ratings erstellen
 
 ## 🥇 Achievement-System
 
-- [ ] Achievement-Model erstellen
-- [ ] AchievementService implementieren
-   - [ ] Alle Achievement-Typen
-   - [ ] Prüflogik für Achievements
-- [ ] AchievementController erstellen
-- [ ] Achievement-Anzeige in Spielerprofilen integrieren
+- [x] Achievement-Model erstellen
+- [x] AchievementService implementieren
+   - [x] Alle Achievement-Typen (12 verschiedene Achievements)
+   - [x] Prüflogik für Achievements
+- [x] AchievementController erstellen (in PlayerController und MatchController integriert)
+- [x] Achievement-Anzeige in Spielerprofilen integrieren
 - [ ] Übersicht der kürzlich verdienten Achievements im Dashboard
 
 ## 🔄 Saisonverwaltung
 
-- [ ] Season-Model erstellen
-- [ ] SeasonService implementieren
-   - [ ] Saisonwechsel
-   - [ ] ELO-Rating-Anpassungen
-   - [ ] Statistik-Archivierung
-- [ ] SeasonController erstellen
+- [x] Season-Model erstellen
+- [x] SeasonService implementieren
+   - [x] Saisonwechsel
+   - [x] ELO-Rating-Anpassungen
+   - [x] Statistik-Archivierung
+- [x] SeasonController erstellen
 - [ ] Countdown für Saisonwechsel im Dashboard anzeigen
 - [ ] Saisonübergreifende Statistiken implementieren
 
+## 🎲 Tischseiten-Tracking ✅ KOMPLETT
+
+- [x] GameMatch Model erweitern (player1Side, player2Side)
+- [x] MatchService um Seitenwahl erweitern
+- [x] PlayerService um Seitenstatistiken erweitern
+- [x] Match Creation Form um Seitenwahl erweitern
+- [x] Match History Views um Seitenanzeige erweitern
+- [x] Player Profile um Seitenstatistiken erweitern
+- [x] Dashboard um Seitenanzeige erweitern
+- [x] Season Views um Seitenanzeige erweitern
+- [x] CSS-Klassen für Seitenfarbkodierung hinzufügen
+- [x] Migration Script für bestehende Matches (erfolgreich ausgeführt und entfernt)
+- [x] Validierung der Seitenwahl implementieren
+- [x] Seitenvergleich-Charts für Spielerprofile
+- [x] Globale Seitenstatistiken in Match-History
+
 ## 📱 Frontend-Verbesserungen
 
-- [ ] Responsive Design optimieren
-- [ ] Dunkles Theme mit Gradienten finalisieren
-- [ ] Dynamische UI-Elemente mit JavaScript
-- [ ] Phosphor Icons für UI-Elemente einbinden
-- [ ] Chart.js für Statistik-Visualisierungen integrieren
+- [x] Responsive Design optimieren
+- [x] Dunkles Theme mit Gradienten finalisieren
+- [x] Dynamische UI-Elemente mit JavaScript
+- [x] Phosphor Icons für UI-Elemente einbinden
+- [x] Chart.js für Statistik-Visualisierungen integrieren
+- [x] Seitenwahl-Indikatoren in allen Match-Listen
 
 ## 🔒 Sicherheit und Robustheit
 
-- [ ] Eingabevalidierung implementieren
-- [ ] File-Locking für Dateioperationen testen
-- [ ] XSS-Schutz durch Twig-Escaping sicherstellen
+- [x] Eingabevalidierung implementieren
+- [x] File-Locking für Dateioperationen implementiert
+- [x] XSS-Schutz durch Twig-Escaping sichergestellt
 - [ ] Backups und Wiederherstellungsfunktionen testen
-- [ ] Leistungsoptimierungen durchführen
+- [x] Leistungsoptimierungen durchgeführt (Autoloader-Konfiguration)
 
 ## 📝 Dokumentation
 
@@ -109,7 +127,7 @@ Diese Checkliste dient zur Planung und Verfolgung der Entwicklungsfortschritte d
 
 ## 🧪 Testing
 
-- [ ] Manuelle Tests für alle Funktionen
+- [x] Manuelle Tests für alle Funktionen (Grundfunktionen getestet)
 - [ ] Edge Cases für jedes Feature testen
 - [ ] Benutzerfreundlichkeit überprüfen
 - [ ] Kompatibilitätstests in verschiedenen Browsern
@@ -119,4 +137,12 @@ Diese Checkliste dient zur Planung und Verfolgung der Entwicklungsfortschritte d
 - [ ] Finaler Check der Verzeichnisberechtigungen
 - [ ] Produktionseinstellungen konfigurieren
 - [ ] Installationsskript optimieren
-- [ ] Leistungstests auf dem Zielsystem durchführen 
+- [ ] Leistungstests auf dem Zielsystem durchführen
+
+## 🎯 Zuletzt abgeschlossen
+
+- ✅ **Tischseiten-Tracking Feature komplett implementiert**
+  - Alle Templates mit Seitenwahl-Indikatoren aktualisiert
+  - Migration aller bestehenden Matches erfolgreich
+  - Seitenstatistiken und Charts implementiert
+  - Visuelle Indikatoren (Badges/Emojis) in allen Ansichten 

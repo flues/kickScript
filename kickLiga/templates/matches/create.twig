@@ -41,13 +41,60 @@
                             </div>
                         </div>
 
+                        <!-- Seitenwahl-Bereich -->
+                        <div class="side-selection mb-4">
+                            <h5 class="mb-3">
+                                <i class="ph-arrows-split"></i> Seitenwahl
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="player1Side" class="form-label">
+                                        <span id="player1Name">Spieler 1</span> spielt auf:
+                                    </label>
+                                    <select class="form-select" id="player1Side" name="player1Side" required>
+                                        <option value="blau" {{ (formData.player1Side == 'blau' or not formData.player1Side) ? 'selected' : '' }}>
+                                            🔵 Blaue Seite
+                                        </option>
+                                        <option value="weiss" {{ (formData.player1Side == 'weiss') ? 'selected' : '' }}>
+                                            ⚪ Weiße Seite
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="player2Side" class="form-label">
+                                        <span id="player2Name">Spieler 2</span> spielt auf:
+                                    </label>
+                                    <select class="form-select" id="player2Side" name="player2Side" required>
+                                        <option value="weiss" {{ (formData.player2Side == 'weiss' or not formData.player2Side) ? 'selected' : '' }}>
+                                            ⚪ Weiße Seite
+                                        </option>
+                                        <option value="blau" {{ (formData.player2Side == 'blau') ? 'selected' : '' }}>
+                                            🔵 Blaue Seite
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <small class="text-muted">
+                                        <i class="ph-info"></i> 
+                                        Beide Spieler müssen auf verschiedenen Seiten spielen.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="scorePlayer1" class="form-label">Ergebnis Spieler 1</label>
+                                <label for="scorePlayer1" class="form-label">
+                                    Ergebnis <span id="player1ScoreLabel">Spieler 1</span>
+                                </label>
                                 <input type="number" class="form-control" id="scorePlayer1" name="scorePlayer1" value="{{ formData.scorePlayer1 ?? 0 }}" min="0" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="scorePlayer2" class="form-label">Ergebnis Spieler 2</label>
+                                <label for="scorePlayer2" class="form-label">
+                                    Ergebnis <span id="player2ScoreLabel">Spieler 2</span>
+                                </label>
                                 <input type="number" class="form-control" id="scorePlayer2" name="scorePlayer2" value="{{ formData.scorePlayer2 ?? 0 }}" min="0" required>
                             </div>
                         </div>
@@ -73,4 +120,68 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const player1Select = document.getElementById('player1Id');
+    const player2Select = document.getElementById('player2Id');
+    const player1Side = document.getElementById('player1Side');
+    const player2Side = document.getElementById('player2Side');
+    
+    // Dynamische Spielernamen-Updates
+    function updatePlayerNames() {
+        const player1Name = player1Select.options[player1Select.selectedIndex].text;
+        const player2Name = player2Select.options[player2Select.selectedIndex].text;
+        
+        if (player1Select.value) {
+            document.getElementById('player1Name').textContent = player1Name;
+            document.getElementById('player1ScoreLabel').textContent = player1Name;
+        } else {
+            document.getElementById('player1Name').textContent = 'Spieler 1';
+            document.getElementById('player1ScoreLabel').textContent = 'Spieler 1';
+        }
+        
+        if (player2Select.value) {
+            document.getElementById('player2Name').textContent = player2Name;
+            document.getElementById('player2ScoreLabel').textContent = player2Name;
+        } else {
+            document.getElementById('player2Name').textContent = 'Spieler 2';
+            document.getElementById('player2ScoreLabel').textContent = 'Spieler 2';
+        }
+    }
+    
+    // Automatische Seitenzuweisung (verschiedene Seiten)
+    function updateSideAssignment() {
+        if (player1Side.value === player2Side.value) {
+            // Wenn beide auf derselben Seite sind, ändere die andere
+            if (player1Side.value === 'blau') {
+                player2Side.value = 'weiss';
+            } else {
+                player2Side.value = 'blau';
+            }
+        }
+    }
+    
+    // Event Listeners
+    player1Select.addEventListener('change', updatePlayerNames);
+    player2Select.addEventListener('change', updatePlayerNames);
+    
+    player1Side.addEventListener('change', function() {
+        if (this.value === player2Side.value) {
+            player2Side.value = this.value === 'blau' ? 'weiss' : 'blau';
+        }
+    });
+    
+    player2Side.addEventListener('change', function() {
+        if (this.value === player1Side.value) {
+            player1Side.value = this.value === 'blau' ? 'weiss' : 'blau';
+        }
+    });
+    
+    // Initiale Updates
+    updatePlayerNames();
+});
+</script>
 {% endblock %} 
