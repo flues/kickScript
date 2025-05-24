@@ -1,76 +1,81 @@
-# Installation und Einrichtung
+# 🚀 Installation und Setup
 
-Diese Anleitung beschreibt die Installation und Konfiguration des Kickerliga Management Systems.
+Diese Anleitung beschreibt die schnelle Installation des Kickerliga Management Systems für lokale Entwicklung und Produktiveinsatz.
 
-## Systemvoraussetzungen
+## 📋 Systemvoraussetzungen
 
-- PHP 7.4 oder höher
-- Composer (für Abhängigkeitsmanagement)
-- Webserver (Apache oder Nginx)
-- mod_rewrite (für Apache) oder entsprechende URL-Rewriting-Funktionalität (für Nginx)
-- Grundlegende Zugriffsrechte für Dateien und Verzeichnisse
+- **PHP 7.4 oder höher** mit CLI-Zugang
+- **Composer** (für Dependency Management)
+- **Webserver** mit PHP-Unterstützung (Apache/Nginx) oder PHP Built-in Server
+- **mod_rewrite** (bei Apache) oder URL-Rewriting-Funktionalität
+- **Moderne Browser** mit JavaScript-Unterstützung
 
-## Installation
+## ⚡ Schnellstart (Lokale Entwicklung)
 
-### 1. Code herunterladen
-
-Klone das Repository oder lade die Dateien auf deinen Webserver hoch:
-
+### 1. Repository klonen
 ```bash
-git clone https://github.com/username/kickerliga.git
+git clone [repository-url] kickerliga
 cd kickerliga
 ```
 
-### 2. Abhängigkeiten installieren
-
-Verwende Composer, um die erforderlichen PHP-Pakete zu installieren:
-
+### 2. Dependencies installieren
 ```bash
 composer install
 ```
 
-Hauptsächliche Abhängigkeiten:
-- Slim Framework 4.x
-- Twig Template Engine
-- PHP-DI (Dependency Injection Container)
-- Monolog (für Logging)
-
-### 3. Verzeichnisberechtigungen
-
-Stelle sicher, dass die folgenden Verzeichnisse beschreibbar sind:
-
+### 3. Verzeichnisberechtigungen setzen
 ```bash
+# Linux/macOS
 chmod -R 775 data/
 chmod -R 775 logs/
+
+# Windows (PowerShell als Administrator)
+icacls data /grant Everyone:F /T
+icacls logs /grant Everyone:F /T
 ```
 
-### 4. Webserver-Konfiguration
+### 4. Lokalen Server starten
+```bash
+# PHP Built-in Server (einfachste Methode)
+php -S localhost:8000 -t public
+
+# Alternative: Mit spezifischer IP
+php -S 192.168.1.100:8000 -t public
+```
+
+### 5. Im Browser öffnen
+```
+http://localhost:8000
+```
+
+✅ **Das war's!** Das System ist einsatzbereit.
+
+## 🌐 Produktions-Setup
+
+### Webserver-Konfiguration
 
 #### Apache
-
-Aktiviere mod_rewrite und erstelle oder bearbeite die `.htaccess`-Datei im öffentlichen Verzeichnis:
-
+Erstelle eine `.htaccess` im `public/` Verzeichnis:
 ```apache
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [QSA,L]
 
-# Verzeichnisschutz für data/
+# Datenschutz für sensible Verzeichnisse
 <IfModule mod_rewrite.c>
     RewriteRule ^data/ - [F,L]
+    RewriteRule ^logs/ - [F,L]
+    RewriteRule ^\.docs/ - [F,L]
 </IfModule>
 ```
 
 #### Nginx
-
-Konfiguriere die Nginx-Server-Block-Datei:
-
 ```nginx
 server {
     listen 80;
     server_name kickerliga.example.com;
-    root /pfad/zu/kickerliga/public;
+    root /var/www/kickerliga/public;
     index index.php;
 
     location / {
@@ -78,127 +83,150 @@ server {
     }
 
     location ~ \.php$ {
-        fastcgi_pass unix:/run/php/php7.4-fpm.sock;  # Anpassen an PHP-Version
+        fastcgi_pass unix:/run/php/php8.0-fpm.sock;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
 
-    # Zugriff auf data/ Verzeichnis verbieten
-    location ~ ^/data/ {
+    # Zugriff auf Datenverzeichnisse verbieten
+    location ~ ^/(data|logs|\.docs)/ {
         deny all;
         return 403;
     }
 }
 ```
 
-### 5. Konfigurationsdatei
+### Virtual Host Setup
+```bash
+# Document Root sollte auf das 'public' Verzeichnis zeigen
+DocumentRoot /var/www/kickerliga/public
+```
 
-Erstelle eine Konfigurationsdatei `config/settings.php` basierend auf der Vorlage:
+## 🔧 Erweiterte Konfiguration
+
+### Umgebungseinstellungen (Optional)
+Erstelle eine `.env` Datei im Projektroot:
+```env
+APP_ENV=development
+APP_DEBUG=true
+APP_NAME="Kickerliga Management"
+LOG_LEVEL=debug
+```
+
+### Log-Konfiguration
+Logs werden automatisch in `logs/app.log` gespeichert. Für Produktion:
+```bash
+# Log-Rotation einrichten (Linux)
+sudo nano /etc/logrotate.d/kickerliga
+```
+
+## ✅ Installation überprüfen
+
+### Funktionstest
+1. **Startseite laden**: Dashboard sollte sichtbar sein
+2. **Spieler hinzufügen**: Teste die Spielerverwaltung
+3. **Spiel erfassen**: Erstelle ein Testmatch
+4. **Statistiken prüfen**: ELO-Ratings sollten aktualisiert werden
+
+### Debug-Informationen
+- **Logs prüfen**: `tail -f logs/app.log`
+- **PHP-Fehler**: Browser-Entwicklertools → Console
+- **Berechtigungen**: `ls -la data/` sollte Schreibzugriff zeigen
+
+## 🛠️ Troubleshooting
+
+### Häufige Probleme
+
+#### 🚫 500 Internal Server Error
+```bash
+# Berechtigungen prüfen
+ls -la data/ logs/
+
+# PHP-Fehlerlog prüfen
+tail -f /var/log/php_errors.log
+
+# Webserver-Konfiguration testen
+php -S localhost:8000 -t public  # Wenn das funktioniert, ist es ein Webserver-Problem
+```
+
+#### 📁 "Class not found" Fehler
+```bash
+# Autoloader neu generieren
+composer dump-autoload
+
+# Dependencies neu installieren
+rm -rf vendor/ composer.lock
+composer install
+```
+
+#### 💾 Datenspeicherung funktioniert nicht
+```bash
+# Verzeichnisberechtigungen prüfen und korrigieren
+sudo chown -R www-data:www-data data/ logs/
+chmod -R 775 data/ logs/
+```
+
+#### 🎨 Frontend-Probleme
+- Browser-Cache leeren (Strg+F5)
+- Browser-Entwicklertools → Network-Tab prüfen
+- Asset-Pfade in `templates/layout.twig` überprüfen
+
+### System-Informationen
+```bash
+# PHP-Version und Module prüfen
+php -v
+php -m | grep -E "(json|curl|mbstring)"
+
+# Composer-Version
+composer --version
+
+# Verfügbare Speicher
+df -h  # Festplattenspeicher
+free -h  # RAM (Linux)
+```
+
+## 🔐 Sicherheitshinweise
+
+### Produktionsumgebung
+- **Fehlermeldungen deaktivieren**: `APP_DEBUG=false` in `.env`
+- **Sensible Verzeichnisse schützen**: `data/`, `logs/`, `.docs/` vor Web-Zugriff sperren
+- **HTTPS verwenden**: SSL-Zertifikat einrichten
+- **Backups einrichten**: Automatische Sicherung des `data/` Verzeichnises
+
+### Zugriffskontrolle (Optional)
+```apache
+# Basic Auth für gesamte Anwendung (.htaccess)
+AuthType Basic
+AuthName "Kickerliga Access"
+AuthUserFile /path/to/.htpasswd
+Require valid-user
+```
+
+## 🔄 Updates durchführen
 
 ```bash
-cp config/settings.example.php config/settings.php
+# Code aktualisieren
+git pull origin main
+
+# Dependencies aktualisieren
+composer update
+
+# Cache leeren (falls vorhanden)
+rm -rf cache/* tmp/*
+
+# Berechtigungen prüfen
+chmod -R 775 data/ logs/
 ```
 
-Bearbeite die Einstellungen nach Bedarf:
+## 📞 Support
 
-```php
-<?php
+Bei Problemen:
+1. **Logs prüfen**: `logs/app.log`
+2. **Dokumentation**: Weitere Details in `.docs/`
+3. **GitHub Issues**: [Repository-Issues]
+4. **Debug-Modus**: `APP_DEBUG=true` für detaillierte Fehlermeldungen
 
-return [
-    'app' => [
-        'name' => 'Kickerliga Management System',
-        'environment' => 'development', // Für Produktion auf 'production' setzen
-        'displayErrorDetails' => true,  // Für Produktion auf false setzen
-    ],
-    'logger' => [
-        'name' => 'kickerliga',
-        'path' => __DIR__ . '/../logs/app.log',
-        'level' => \Monolog\Logger::DEBUG, // Für Produktion auf ERROR setzen
-    ],
-    'data' => [
-        'path' => __DIR__ . '/../data',
-    ],
-];
-```
+---
 
-### 6. Datenstruktur initialisieren
-
-Führe das Setup-Skript aus, um die erforderliche Verzeichnisstruktur für die Datenspeicherung zu erstellen:
-
-```bash
-php bin/setup.php
-```
-
-Dieses Skript erstellt folgende Verzeichnisse:
-- `data/players/` - Für Spielerdaten
-- `data/matches/` - Für Spieldaten
-- `data/tournaments/` - Für Turnierdaten
-- `data/seasons/` - Für saisonale Daten
-
-### 7. Frontend-Assets
-
-Die Frontend-Assets (CSS, JavaScript) sind bereits im Repository enthalten und müssen nicht separat gebaut werden. Sollten Änderungen nötig sein:
-
-```bash
-# Nur wenn du SCSS-Dateien bearbeiten möchtest
-npm install
-npm run build
-```
-
-## Überprüfung der Installation
-
-Nach der Installation kannst du prüfen, ob das System ordnungsgemäß funktioniert:
-
-1. Öffne einen Webbrowser und navigiere zur URL deines Servers (z.B. http://localhost/kickerliga oder http://kickerliga.example.com).
-2. Die Startseite des Kickerliga Management Systems sollte angezeigt werden.
-3. Überprüfe im Debug-Modus die Logdateien unter `logs/app.log` auf etwaige Fehler.
-
-## Erste Schritte
-
-Nach erfolgreicher Installation kannst du mit der Nutzung des Systems beginnen:
-
-1. **Spieler hinzufügen**: Erstelle zunächst einige Spieler im System
-2. **Spiele erfassen**: Gib ein paar Spielergebnisse ein
-3. **Statistiken ansehen**: Überprüfe, ob die Rangliste und Statistiken korrekt angezeigt werden
-4. **Turnier erstellen**: Teste die Turnierfunktionalität
-
-## Bekannte Probleme und Lösungen
-
-### Problem: Leere Seite oder 500-Fehler
-
-- Überprüfe, ob die PHP-Fehlerprotokolle aktiviert sind
-- Stelle sicher, dass mod_rewrite (Apache) oder URL-Rewriting (Nginx) korrekt konfiguriert ist
-- Prüfe die Dateiberechtigungen für Verzeichnisse `data/` und `logs/`
-
-### Problem: Datenspeicherung funktioniert nicht
-
-- Stelle sicher, dass PHP Schreibzugriff auf das Verzeichnis `data/` hat
-- Überprüfe, ob die Datei-Locking-Funktionen in PHP aktiviert sind
-
-### Problem: Darstellungsprobleme im Frontend
-
-- Leere den Browser-Cache
-- Stelle sicher, dass alle Assets (JS, CSS) korrekt geladen werden (prüfe die Netzwerkanfragen in den Browser-Entwicklertools)
-
-## Sicherheitshinweise
-
-- Das System verwendet keine Benutzerverwaltung oder Authentifizierung. Wenn dies erforderlich ist, solltest du entsprechende Maßnahmen ergreifen (z.B. Basic Auth auf Webserver-Ebene).
-- Stelle sicher, dass das `data/`-Verzeichnis vor direktem Zugriff über das Web geschützt ist.
-- In einer Produktionsumgebung solltest du `displayErrorDetails` auf `false` setzen und das Log-Level auf `ERROR` anheben.
-
-## Aktualisierung
-
-Um das System auf eine neuere Version zu aktualisieren:
-
-1. Sichere deine Daten (`data/` Verzeichnis)
-2. Aktualisiere den Code (via Git oder durch manuelles Ersetzen der Dateien)
-3. Führe `composer update` aus, um Abhängigkeiten zu aktualisieren
-4. Überprüfe, ob neue Konfigurationsoptionen hinzugefügt wurden
-
-## Support
-
-Bei Problemen oder Fragen:
-- Prüfe die Dokumentation im `.docs/` Verzeichnis
-- Überprüfe die Issue-Tracker im GitHub-Repository
-- Erstelle ein neues Issue für ungelöste Probleme 
+**💡 Tipp**: Für die erste Einrichtung reicht der Schnellstart mit PHP Built-in Server. Für Produktiveinsatz sollten Sie einen vollwertigen Webserver verwenden. 

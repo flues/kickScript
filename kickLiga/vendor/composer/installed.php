@@ -3,7 +3,7 @@
         'name' => 'kickliga/management',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '645dc8998a96874b0a874492db4bd686ece52656',
+        'reference' => '40b2bc97588aa97ca90730fad162893eecf0105b',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'kickliga/management' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '645dc8998a96874b0a874492db4bd686ece52656',
+            'reference' => '40b2bc97588aa97ca90730fad162893eecf0105b',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
