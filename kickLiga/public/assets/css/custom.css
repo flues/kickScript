@@ -98,7 +98,10 @@ body {
     background: rgb(33 37 41 / 20%) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
 }
-
+.table-striped>tbody>tr:nth-of-type(odd)>* {
+    --bs-table-color-type: var(--bs-table-striped-color);
+    --bs-table-bg-type: #2c30346b;
+}
 /* Formulare transparenter */
 .form-control,
 .form-select {
