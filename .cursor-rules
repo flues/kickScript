@@ -86,7 +86,7 @@ kickLiga/
 
 ### Development Workflow
 
-- **Local Server**: `php -S localhost:8000 -t public` für Entwicklung
+- **Local Server**: `php -S localhost:1337 -t public` für Entwicklung
 - **Dependencies**: `composer install` nach Git-Clone
 - **Debugging**: `logs/app.log` für Fehleranalyse
 - **Testing**: Edge Cases und verschiedene Datenkonstellationen testen

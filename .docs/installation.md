@@ -37,15 +37,15 @@ icacls logs /grant Everyone:F /T
 ### 4. Lokalen Server starten
 ```bash
 # PHP Built-in Server (einfachste Methode)
-php -S localhost:8000 -t public
+php -S localhost:1337 -t public
 
 # Alternative: Mit spezifischer IP
-php -S 192.168.1.100:8000 -t public
+php -S 192.168.1.100:1337 -t public
 ```
 
 ### 5. Im Browser öffnen
 ```
-http://localhost:8000
+http://localhost:1337
 ```
 
 ✅ **Das war's!** Das System ist einsatzbereit.
@@ -147,7 +147,7 @@ ls -la data/ logs/
 tail -f /var/log/php_errors.log
 
 # Webserver-Konfiguration testen
-php -S localhost:8000 -t public  # Wenn das funktioniert, ist es ein Webserver-Problem
+php -S localhost:1337 -t public  # Wenn das funktioniert, ist es ein Webserver-Problem
 ```
 
 #### 📁 "Class not found" Fehler
