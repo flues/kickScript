@@ -107,6 +107,14 @@
     {% block head %}{% endblock %}
 </head>
 <body>
+    <!-- Video Background -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="{{ base_path() }}/assets/video/bg-video.mp4" type="video/mp4">
+            <!-- Fallback für Browser ohne Video-Unterstützung -->
+        </video>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">

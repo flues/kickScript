@@ -2,25 +2,155 @@
    CUSTOM STYLES - Kickerliga Management
    ====================================== */
 
+/* ======================================
+   VIDEO BACKGROUND SETUP
+   ====================================== */
+
+/* Video-Hintergrund für den Body */
+body {
+    position: relative;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Video-Hintergrund Element */
+.video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.video-background video {
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    opacity: 0.6;
+    filter: brightness(0.8) contrast(1.2);
+}
+
 /* Allgemeine Anpassungen */
 :root {
    --primary-gradient: linear-gradient(135deg, #188352 0%, #0a59cd 100%);
 }
-.card-header:first-child {
-    background: var(--primary-gradient);
 
+/* ======================================
+   TRANSPARENZ-ANPASSUNGEN FÜR ALLE ELEMENTE
+   ====================================== */
+
+/* Cards transparenter machen */
+.card {
+    background: rgb(33 37 41 / 50%) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 }
+
+.card-header {
+    background: rgba(13, 110, 253, 0.85) !important;
+    backdrop-filter: blur(15px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+.card-header:first-child {
+    background: linear-gradient(135deg, rgba(24, 131, 82, 0.9) 0%, rgba(10, 89, 205, 0.9) 100%) !important;
+}
+
+.card-body {
+  
+}
+
+/* Navigationsbar transparenter */
+.navbar {
+    background: rgba(33, 37, 41, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Tabellen transparenter */
+.table-dark {
+    background:transparent !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.table-dark th,
+.table-dark td {
+    background: rgba(33, 37, 41, 0.7) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Formulare transparenter */
+.form-control,
+.form-select {
+    background: rgba(33, 37, 41, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #fff !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background: rgba(33, 37, 41, 0.9) !important;
+    border-color: rgba(13, 110, 253, 0.8) !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Buttons anpassen */
+.btn {
+    backdrop-filter: blur(5px) !important;
+}
+
+/* List Groups transparenter */
+.list-group-item {
+    background: rgba(33, 37, 41, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Badges transparenter */
+.badge {
+    backdrop-filter: blur(5px) !important;
+}
+
+/* Alerts transparenter */
+.alert {
+    background: rgba(33, 37, 41, 0.9) !important;
+    backdrop-filter: blur(15px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Modals transparenter */
+.modal-content {
+    background: rgba(33, 37, 41, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.modal-header {
+    background: rgba(13, 110, 253, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
 .card-header:first-child  .btn {
-    background: #000;
+    background: rgba(0, 0, 0, 0.7) !important;
     color: #fff;
-    border-color: #000;
-    filter: opacity(0.5);
+    border-color: rgba(0, 0, 0, 0.7) !important;
+    filter: opacity(0.8);
+    backdrop-filter: blur(5px) !important;
 }
 .card-header:first-child  .btn:hover {
    filter: opacity(1);
-}
-.custom-shadow {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+   background: rgba(0, 0, 0, 0.9) !important;
 }
 
 /* Card-Anpassungen */
@@ -456,4 +586,8 @@
         order: 2;
         margin: 0.5rem 0;
     }
+}
+
+.custom-shadow {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 } 
