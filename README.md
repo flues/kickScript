@@ -168,7 +168,7 @@ Dieses Projekt steht unter der MIT-Lizenz. Siehe `LICENSE` Datei für Details.
 ## 🔗 Links
 
 - **Projektdokumentation**: [.docs/](.docs/)
-- **Live-Demo**: [Coming Soon]
+- **Live-Demo**: [https://kick.flues.dev](https://kick.flues.dev)
 - **Issue-Tracker**: [GitHub Issues]
 - **Changelog**: [.docs/todo.md](.docs/todo.md)
 
