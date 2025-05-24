@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'kickliga/management',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '645dc8998a96874b0a874492db4bd686ece52656',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'kickliga/management' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '645dc8998a96874b0a874492db4bd686ece52656',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

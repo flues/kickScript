@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Services\MatchService;
 use App\Services\PlayerService;
 use App\Services\SeasonService;
+use App\Services\AchievementService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -18,17 +19,20 @@ class MatchController
     private MatchService $matchService;
     private PlayerService $playerService;
     private ?SeasonService $seasonService;
+    private ?AchievementService $achievementService;
 
     public function __construct(
         Twig $view,
         MatchService $matchService,
         PlayerService $playerService,
-        ?SeasonService $seasonService = null
+        ?SeasonService $seasonService = null,
+        ?AchievementService $achievementService = null
     ) {
         $this->view = $view;
         $this->matchService = $matchService;
         $this->playerService = $playerService;
         $this->seasonService = $seasonService;
+        $this->achievementService = $achievementService;
     }
 
     /**
@@ -120,6 +124,11 @@ class MatchController
             // Aktualisiere die aktive Saison mit dem neuen Match, wenn SeasonService verfügbar ist
             if ($this->seasonService !== null) {
                 $this->seasonService->updateSeasonWithMatch($match);
+            }
+            
+            // Überprüfe Achievements für beide Spieler nach dem Match
+            if ($this->achievementService !== null) {
+                $this->achievementService->checkAchievementsAfterMatch($player1Id, $player2Id);
             }
         } catch (\RuntimeException $e) {
             return $this->renderCreateFormWithError($response, 'Fehler beim Speichern des Spiels: ' . $e->getMessage(), $data);

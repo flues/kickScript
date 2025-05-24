@@ -139,16 +139,16 @@
         "name": "zSinanProxGAMERhdLP",
         "nickname": null,
         "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExbDAwODR3bnVlOG5zMW90a2NoajllZTB3czcyam5ma2IwejEzdGtkayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/l4jGvc7xVeDQWMt4ak\/giphy.gif",
-        "eloRating": 992,
+        "eloRating": 977,
         "statistics": {
             "wins": 1,
-            "losses": 2,
+            "losses": 3,
             "draws": 0,
-            "goalsScored": 20,
-            "goalsConceded": 22,
+            "goalsScored": 29,
+            "goalsConceded": 32,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 3
+            "matchesPlayed": 4
         },
         "achievements": [],
         "eloHistory": [
@@ -174,9 +174,15 @@
                 "change": 34,
                 "timestamp": 1747659860,
                 "reason": "Match gegen Phil"
+            },
+            {
+                "rating": 977,
+                "change": -15,
+                "timestamp": 1747827105,
+                "reason": "Match gegen Phil"
             }
         ],
         "createdAt": 1747227594,
-        "lastMatch": 1747659860
+        "lastMatch": 1747827105
     }
 }

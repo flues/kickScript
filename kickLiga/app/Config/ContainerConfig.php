@@ -13,6 +13,7 @@ use App\Services\PlayerService;
 use App\Services\MatchService;
 use App\Services\EloService;
 use App\Services\SeasonService;
+use App\Services\AchievementService;
 use DI\Container;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
@@ -93,6 +94,15 @@ class ContainerConfig
                 );
             },
             
+            // AchievementService
+            AchievementService::class => function (Container $container) {
+                return new AchievementService(
+                    $container->get(PlayerService::class),
+                    $container->get(MatchService::class),
+                    $container->get(LoggerInterface::class)
+                );
+            },
+            
             // Twig View
             'view' => function (Container $container) {
                 $twig = Twig::create(__DIR__ . '/../../templates', [
@@ -134,7 +144,8 @@ class ContainerConfig
                 return new PlayerController(
                     $container->get('view'),
                     $container->get(PlayerService::class),
-                    $container->get(MatchService::class)
+                    $container->get(MatchService::class),
+                    $container->get(AchievementService::class)
                 );
             },
 
@@ -143,7 +154,8 @@ class ContainerConfig
                     $container->get('view'),
                     $container->get(MatchService::class),
                     $container->get(PlayerService::class),
-                    $container->get(SeasonService::class)
+                    $container->get(SeasonService::class),
+                    $container->get(AchievementService::class)
                 );
             },
             

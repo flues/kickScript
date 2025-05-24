@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Models\Player;
 use App\Services\PlayerService;
 use App\Services\MatchService;
+use App\Services\AchievementService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -17,15 +18,21 @@ class PlayerController
     private Twig $view;
     private PlayerService $playerService;
     private ?MatchService $matchService;
+    private ?AchievementService $achievementService;
 
     /**
      * Controller Konstruktor mit Dependency Injection
      */
-    public function __construct(Twig $view, PlayerService $playerService, ?MatchService $matchService = null)
-    {
+    public function __construct(
+        Twig $view, 
+        PlayerService $playerService, 
+        ?MatchService $matchService = null,
+        ?AchievementService $achievementService = null
+    ) {
         $this->view = $view;
         $this->playerService = $playerService;
         $this->matchService = $matchService;
+        $this->achievementService = $achievementService;
     }
 
     /**
@@ -67,6 +74,13 @@ class PlayerController
             ]);
         }
         
+        // Überprüfe aktuelle Achievements für den Spieler
+        if ($this->achievementService !== null) {
+            $this->achievementService->checkAchievementsForPlayer($playerId);
+            // Lade Spieler erneut, um evtl. neue Achievements zu erhalten
+            $player = $this->playerService->getPlayerById($playerId);
+        }
+        
         // Hole die letzten Matches des Spielers, wenn der MatchService verfügbar ist
         $recentMatches = [];
         if ($this->matchService !== null) {
@@ -81,11 +95,23 @@ class PlayerController
             $recentMatches = array_slice($allMatches, 0, 5);
         }
         
+        // Bereite ELO-Historie für Chart.js vor
+        $eloHistory = $player->getEloHistory();
+        $eloChartData = [];
+        
+        foreach ($eloHistory as $entry) {
+            $eloChartData[] = [
+                'x' => $entry['timestamp'] * 1000, // JavaScript braucht Millisekunden
+                'y' => $entry['rating']
+            ];
+        }
+        
         return $this->view->render($response, 'players/view.twig', [
             'title' => $player->getDisplayName(),
             'player' => $player,
             'recentMatches' => $recentMatches,
-            'player_service' => $this->playerService
+            'player_service' => $this->playerService,
+            'eloChartData' => $eloChartData
         ]);
     }
 
