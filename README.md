@@ -174,6 +174,6 @@ Dieses Projekt steht unter der MIT-Lizenz. Siehe `LICENSE` Datei für Details.
 
 ---
 
-**💡 Tipp**: Beginnen Sie mit der [installation.md](.docs/installation.md) für eine schnelle Einrichtung, oder erkunden Sie die [Featuredokumentation](.docs/) für tiefere Einblicke in spezifische Funktionen.
+**💡 Tipp**: Für eine schnelle Einrichtung am besten mit der [installation.md](.docs/installation.md) starten, oder die [Featuredokumentation](.docs/) für tiefere Einblicke in spezifische Funktionen erkunden.
 
-*Entwickelt mit ❤️ für die Kicker-Community*
+*Entwickelt mit ❤️ für Büros mit Tischkicker*

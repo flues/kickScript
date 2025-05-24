@@ -229,4 +229,4 @@ Bei Problemen:
 
 ---
 
-**💡 Tipp**: Für die erste Einrichtung reicht der Schnellstart mit PHP Built-in Server. Für Produktiveinsatz sollten Sie einen vollwertigen Webserver verwenden. 
+**💡 Tipp**: Für die erste Einrichtung reicht der Schnellstart mit PHP Built-in Server. Für Produktiveinsatz empfiehlt sich ein vollwertiger Webserver. 
