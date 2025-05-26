@@ -86,11 +86,29 @@ class Player implements JsonSerializable
         }
         
         if (isset($data['createdAt'])) {
-            $player->createdAt = new \DateTimeImmutable('@' . $data['createdAt']);
+            // Behandle verschiedene Datentypen für createdAt
+            if (is_int($data['createdAt'])) {
+                $player->createdAt = new \DateTimeImmutable('@' . $data['createdAt']);
+            } elseif (is_string($data['createdAt'])) {
+                $player->createdAt = new \DateTimeImmutable($data['createdAt']);
+            } elseif (is_array($data['createdAt']) && isset($data['createdAt']['timestamp'])) {
+                $player->createdAt = new \DateTimeImmutable('@' . $data['createdAt']['timestamp']);
+            } else {
+                // Fallback: Aktueller Zeitstempel
+                $player->createdAt = new \DateTimeImmutable();
+            }
         }
         
-        if (isset($data['lastMatch'])) {
-            $player->lastMatch = new \DateTimeImmutable('@' . $data['lastMatch']);
+        if (isset($data['lastMatch']) && $data['lastMatch'] !== null) {
+            // Behandle verschiedene Datentypen für lastMatch
+            if (is_int($data['lastMatch'])) {
+                $player->lastMatch = new \DateTimeImmutable('@' . $data['lastMatch']);
+            } elseif (is_string($data['lastMatch'])) {
+                $player->lastMatch = new \DateTimeImmutable($data['lastMatch']);
+            } elseif (is_array($data['lastMatch']) && isset($data['lastMatch']['timestamp'])) {
+                $player->lastMatch = new \DateTimeImmutable('@' . $data['lastMatch']['timestamp']);
+            }
+            // Wenn lastMatch null ist oder ungültiges Format hat, bleibt es null
         }
         
         return $player;

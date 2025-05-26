@@ -57,7 +57,7 @@ class PlayerService
             'name' => $player->getName(),
             'nickname' => $player->getNickname(),
             'avatar' => $player->getAvatar(),
-            'createdAt' => $player->getCreatedAt()
+            'createdAt' => $player->getCreatedAt()->getTimestamp()
         ];
         
         $success = $this->dataService->write(self::PLAYERS_META_FILE, $playersMeta);
