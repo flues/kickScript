@@ -4,16 +4,16 @@
         "name": "Tralalero Tralala",
         "nickname": null,
         "avatar": "https:\/\/media0.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExYjRhNWx3dXM1dmRhcmN0MXRkcnBxZHZxaWx1YXViYjhmYWZkczRjcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/XsNAXQl1E8ig8MHAhf\/giphy.gif",
-        "eloRating": 1010,
+        "eloRating": 985,
         "statistics": {
             "wins": 1,
-            "losses": 1,
+            "losses": 2,
             "draws": 0,
-            "goalsScored": 19,
-            "goalsConceded": 12,
+            "goalsScored": 22,
+            "goalsConceded": 22,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 2
+            "matchesPlayed": 3
         },
         "achievements": [],
         "eloHistory": [
@@ -33,10 +33,16 @@
                 "change": -17,
                 "timestamp": 1747224358,
                 "reason": "Match gegen Tung Tung Tung Tung Tung Sahur"
+            },
+            {
+                "rating": 985,
+                "change": -25,
+                "timestamp": 1748258485,
+                "reason": "Match gegen Phil"
             }
         ],
         "createdAt": 1747224142,
-        "lastMatch": 1747224358
+        "lastMatch": 1748258485
     },
     "player_682486a0a34bd": {
         "id": "player_682486a0a34bd",
@@ -88,16 +94,16 @@
         "name": "Phil",
         "nickname": null,
         "avatar": "https:\/\/media4.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExb3UwN2duNzFwZXZ2b3ExY2NyZmkzeXNnY2x1cWc5aTJwcnE2ZHZzaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/13w5HmyiuaZ224\/200.webp",
-        "eloRating": 1023,
+        "eloRating": 1048,
         "statistics": {
-            "wins": 3,
+            "wins": 4,
             "losses": 1,
             "draws": 0,
-            "goalsScored": 32,
-            "goalsConceded": 29,
+            "goalsScored": 42,
+            "goalsConceded": 32,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 4
+            "matchesPlayed": 5
         },
         "achievements": [
             {
@@ -111,6 +117,12 @@
                 "name": "🚀 Tormaschine",
                 "description": "Durchschnittlich 5+ Tore pro Spiel (min. 3 Spiele)",
                 "unlockedAt": 1748019613
+            },
+            {
+                "id": "bad_keeper",
+                "name": "💀 Bad Keeper",
+                "description": "Meiste Gegentore in der aktuellen Saison",
+                "unlockedAt": 1748258485
             }
         ],
         "eloHistory": [
@@ -142,10 +154,16 @@
                 "change": 15,
                 "timestamp": 1747827105,
                 "reason": "Match gegen zSinanProxGAMERhdLP"
+            },
+            {
+                "rating": 1048,
+                "change": 25,
+                "timestamp": 1748258485,
+                "reason": "Match gegen Tralalero Tralala"
             }
         ],
         "createdAt": 1747224792,
-        "lastMatch": 1747827105
+        "lastMatch": 1748258485
     },
     "player_682493ca1a3c7": {
         "id": "player_682493ca1a3c7",
@@ -163,7 +181,20 @@
             "tournamentsParticipated": 0,
             "matchesPlayed": 4
         },
-        "achievements": [],
+        "achievements": [
+            {
+                "id": "bad_keeper",
+                "name": "💀 Bad Keeper",
+                "description": "Meiste Gegentore in der aktuellen Saison",
+                "unlockedAt": 1748094646
+            },
+            {
+                "id": "goal_machine",
+                "name": "🚀 Tormaschine",
+                "description": "Durchschnittlich 5+ Tore pro Spiel (min. 3 Spiele)",
+                "unlockedAt": 1748094646
+            }
+        ],
         "eloHistory": [
             {
                 "rating": 1000,

@@ -118,5 +118,20 @@
         "notes": "crazy close game",
         "player1Side": "blau",
         "player2Side": "weiss"
+    },
+    "match_68344eb51776d": {
+        "id": "match_68344eb51776d",
+        "player1Id": "player_682488d836b86",
+        "player2Id": "player_6824864e806f9",
+        "scorePlayer1": 10,
+        "scorePlayer2": 3,
+        "playedAt": 1748258460,
+        "eloChange": {
+            "player1": 25,
+            "player2": -25
+        },
+        "notes": "unerwartet unknapp",
+        "player1Side": "weiss",
+        "player2Side": "blau"
     }
 }
