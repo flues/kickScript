@@ -2,7 +2,9 @@
 
 Ein umfassendes webbasiertes System zur Verwaltung einer Tischfußball-Liga mit ELO-Rating, Achievements, Saisonverwaltung und fortschrittlichem Tischseiten-Tracking.
 
-![Kickerliga Management System](assets/img/preview.png)
+**❤️ Gemacht mit Herz für Büros mit Tischkicker 🏓**
+
+![Kickerliga Management System](/kickLiga/public/assets/img/preview.png)
 
 ## 🌟 Features im Überblick
 
