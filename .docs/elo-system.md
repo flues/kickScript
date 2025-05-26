@@ -1,8 +1,16 @@
-# ELO-Rating System
+# ELO-Rating System (SSOT-Architektur)
 
-Dieses Dokument beschreibt die Implementierung des ELO-Ratingsystems für die Kickerliga.
+Dieses Dokument beschreibt die Implementierung des ELO-Ratingsystems für die Kickerliga nach der **Single Source of Truth** Umstellung.
 
-## Grundprinzipien des ELO-Systems
+## 🎯 SSOT-Prinzip für ELO-Ratings
+
+Das ELO-System folgt dem **Single Source of Truth** Prinzip:
+- **Alle ELO-Ratings werden zur Laufzeit aus `matches.json` berechnet**
+- **Keine separate Speicherung** von ELO-Werten oder Historie
+- **Automatische Konsistenz** - ELO-Ratings sind immer korrekt
+- **Chronologische Berechnung** - ELO-Entwicklung wird Match für Match nachvollzogen
+
+## 🧮 Grundprinzipien des ELO-Systems
 
 Das ELO-System ist ein Bewertungssystem, das ursprünglich für Schach entwickelt wurde und nun für unsere Kicker-Liga angepasst wird. Die Kernprinzipien sind:
 
@@ -11,17 +19,107 @@ Das ELO-System ist ein Bewertungssystem, das ursprünglich für Schach entwickel
    - Dem erwarteten Ergebnis (basierend auf der Differenz der Ratings)
    - Dem tatsächlichen Ergebnis
    - Einem Gewichtungsfaktor (K-Faktor)
+3. **Tordifferenz-Modifikator** für realistischere Bewertungen
 
-## Implementierungsdetails
+## ⚙️ SSOT-Implementierung
 
-### Startrating
+### ComputationService - ELO-Engine
 
-Neue Spieler beginnen mit einem Rating von 1500 Punkten.
+Alle ELO-Berechnungen finden im `ComputationService` statt:
 
-### Berechnung der ELO-Änderung
+```php
+class ComputationService
+{
+    /**
+     * Berechnet das aktuelle ELO-Rating eines Spielers aus matches.json
+     */
+    public function computeCurrentEloRating(string $playerId, array $matches): int
+    {
+        $currentRating = self::DEFAULT_ELO_RATING; // 1000
+        
+        // Chronologisch durch alle Matches gehen
+        foreach ($matches as $match) {
+            $eloChange = $this->getEloChangeForMatch($playerId, $match);
+            $currentRating += $eloChange;
+        }
+        
+        return $currentRating;
+    }
+    
+    /**
+     * Berechnet die komplette ELO-Historie eines Spielers
+     */
+    public function computeEloHistory(string $playerId, array $matches): array
+    {
+        $history = [];
+        $currentRating = self::DEFAULT_ELO_RATING;
+        
+        // Startpunkt
+        $history[] = [
+            'rating' => $currentRating,
+            'change' => 0,
+            'timestamp' => $this->getPlayerCreatedAt($playerId),
+            'reason' => 'initial'
+        ];
+        
+        // Chronologisch durch alle Matches
+        foreach ($matches as $match) {
+            $eloChange = $this->getEloChangeForMatch($playerId, $match);
+            $currentRating += $eloChange;
+            
+            $opponentId = $match['player1Id'] === $playerId ? $match['player2Id'] : $match['player1Id'];
+            $opponentName = $this->getPlayerMeta($opponentId)['name'] ?? 'Unbekannt';
+            
+            $history[] = [
+                'rating' => $currentRating,
+                'change' => $eloChange,
+                'timestamp' => $match['playedAt'],
+                'reason' => "Match gegen {$opponentName}"
+            ];
+        }
+        
+        return $history;
+    }
+}
+```
 
-Nach jedem Spiel wird das Rating der Spieler wie folgt angepasst:
+### ELO-Berechnung zur Laufzeit
 
+**ELO-Änderung pro Match:**
+```php
+private function getEloChangeForMatch(string $playerId, array $match): int
+{
+    // Bestimme Spieler-Position und Gegner
+    if ($match['player1Id'] === $playerId) {
+        $playerScore = $match['scorePlayer1'];
+        $opponentScore = $match['scorePlayer2'];
+        $opponentId = $match['player2Id'];
+    } elseif ($match['player2Id'] === $playerId) {
+        $playerScore = $match['scorePlayer2'];
+        $opponentScore = $match['scorePlayer1'];
+        $opponentId = $match['player1Id'];
+    } else {
+        return 0; // Spieler nicht in diesem Match
+    }
+    
+    // Hole gespeicherte ELO-Änderung aus Match-Daten
+    if (isset($match['eloChange'])) {
+        $eloChangeKey = $match['player1Id'] === $playerId ? 'player1' : 'player2';
+        return $match['eloChange'][$eloChangeKey] ?? 0;
+    }
+    
+    // Fallback: Berechne ELO-Änderung (für alte Matches ohne gespeicherte Änderung)
+    return $this->calculateEloChange($playerId, $opponentId, $playerScore, $opponentScore, $match['playedAt']);
+}
+```
+
+## 🔧 ELO-Berechnungslogik
+
+### Implementierungsdetails
+
+**Startrating:** Neue Spieler beginnen mit einem Rating von **1000 Punkten**.
+
+**Berechnung der ELO-Änderung:**
 ```
 Neues Rating = Altes Rating + K * (Tatsächliches Ergebnis - Erwartetes Ergebnis)
 ```
@@ -53,9 +151,11 @@ Für eine Tordifferenz von 1 ist der Modifikator 1.0, für:
 
 Der modifizierte K-Faktor wird nach oben auf 48 begrenzt (bei sehr hohen Tordifferenzen).
 
-## Code-Implementierung
+## 💻 Code-Implementierung
 
-Der ELO-Service wird in `app/Services/EloService.php` implementiert:
+### EloService - Berechnungslogik
+
+Der `EloService` enthält die reine Berechnungslogik:
 
 ```php
 <?php
@@ -67,7 +167,7 @@ namespace App\Services;
 class EloService
 {
     private const DEFAULT_K_FACTOR = 32;
-    private const DEFAULT_RATING = 1500;
+    private const DEFAULT_RATING = 1000;  // Geändert von 1500 auf 1000
     private const MAX_K_FACTOR = 48;
 
     public function calculateNewRatings(
@@ -81,7 +181,7 @@ class EloService
         $kFactor = $this->getModifiedKFactor($goalDifference);
         
         $ratingChange = (int)round($kFactor * ($actualOutcome - $expectedOutcome));
-        return $playerRating + $ratingChange;
+        return $ratingChange; // Nur die Änderung zurückgeben
     }
     
     private function calculateExpectedOutcome(int $playerRating, int $opponentRating): float
@@ -108,55 +208,200 @@ class EloService
 }
 ```
 
-## Anwendung im System
+### Integration im ComputationService
 
-Der ELO-Service wird vom MatchService nach jedem registrierten Spiel aufgerufen:
-
-1. Spielerverwaltung liest aktuelle ELO-Werte der beteiligten Spieler
-2. Nach Spieleingabe werden die neuen ELO-Werte berechnet
-3. Die Verlaufshistorie der ELO-Werte wird für jeden Spieler gespeichert
-4. Die aktualisierte Rangliste wird neu generiert
-
-## ELO-Historie
-
-Für jeden Spieler wird eine ELO-Historie geführt, um die Entwicklung grafisch darstellen zu können:
-
-```json
+```php
+class ComputationService
 {
-  "elo_history": [
-    {
-      "date": "2023-09-01",
-      "rating": 1500,
-      "change": 0
-    },
-    {
-      "date": "2023-09-03",
-      "rating": 1532,
-      "change": 32,
-      "opponent": "spieler2",
-      "match_id": "match123"
-    },
-    // ... weitere Einträge
-  ]
+    public function __construct(
+        private DataService $dataService,
+        private EloService $eloService,  // ← EloService für Berechnungen
+        private ?LoggerInterface $logger = null
+    ) {}
+    
+    private function calculateEloChange(
+        string $playerId, 
+        string $opponentId, 
+        int $playerScore, 
+        int $opponentScore, 
+        int $timestamp
+    ): int {
+        // Hole aktuelle Ratings zum Zeitpunkt des Matches
+        $playerRating = $this->getEloRatingAtTime($playerId, $timestamp);
+        $opponentRating = $this->getEloRatingAtTime($opponentId, $timestamp);
+        
+        $playerWon = $playerScore > $opponentScore;
+        $goalDifference = abs($playerScore - $opponentScore);
+        
+        return $this->eloService->calculateNewRatings(
+            $playerRating,
+            $opponentRating,
+            $playerWon,
+            $goalDifference
+        );
+    }
 }
 ```
 
-## UI-Integration
+## 🔄 Datenfluss für ELO-System
+
+```
+matches.json (SINGLE SOURCE OF TRUTH)
+       ↓
+ComputationService::computeCurrentEloRating()
+       ↓
+┌─────────────────┬─────────────────┬─────────────────┐
+│ Chronologische  │ ELO-Berechnung  │ ELO-Historie    │
+│ Match-Analyse   │ pro Match       │ Aufbau          │
+│ - Sortierung    │ - EloService    │ - Zeitstempel   │
+│ - Filterung     │ - Tordifferenz  │ - Änderungen    │
+│ - Validierung   │ - K-Faktor      │ - Gründe        │
+└─────────────────┴─────────────────┴─────────────────┘
+       ↓
+Computed ELO Data → PlayerService → Controller → Templates
+```
+
+## 📊 ELO-Historie (Zur Laufzeit berechnet)
+
+Für jeden Spieler wird eine ELO-Historie zur Laufzeit generiert:
+
+```php
+// Beispiel einer berechneten ELO-Historie
+[
+    [
+        'rating' => 1000,
+        'change' => 0,
+        'timestamp' => 1727000000,
+        'reason' => 'initial'
+    ],
+    [
+        'rating' => 1024,
+        'change' => 24,
+        'timestamp' => 1727123456,
+        'reason' => 'Match gegen Anna Schmidt'
+    ],
+    [
+        'rating' => 1008,
+        'change' => -16,
+        'timestamp' => 1727200000,
+        'reason' => 'Match gegen Max Mustermann'
+    ]
+]
+```
+
+## 🎨 UI-Integration
 
 Die ELO-Ratings werden an verschiedenen Stellen der Benutzeroberfläche angezeigt:
 
-1. **Spielerprofil**: Aktuelles Rating und Verlaufsgrafik
-2. **Rangliste**: Sortierung nach aktuellem ELO-Rating
-3. **Spiele**: Anzeige der Rating-Änderung nach jedem Spiel
-4. **Turniere**: Berücksichtigung des Ratings bei der Bracket-Generierung
+### 1. Spielerprofil
+```php
+// Controller
+$player = $this->playerService->getPlayerById($playerId);
+$eloHistory = $player['eloHistory']; // Zur Laufzeit berechnet
 
-## Saisonale Anpassungen
+// Template - Chart.js Integration
+foreach ($eloHistory as $entry) {
+    $chartData[] = [
+        'x' => $entry['timestamp'] * 1000, // JavaScript timestamp
+        'y' => $entry['rating']
+    ];
+}
+```
 
-Am Ende einer Saison werden die ELO-Ratings wie folgt angepasst:
+### 2. Rangliste
+- Sortierung nach aktuellem ELO-Rating (zur Laufzeit berechnet)
+- Live-Updates ohne separate Datenbank-Updates
 
-1. Die ELO-Historie wird archiviert
-2. Neue Saison-Startratings werden berechnet:
-   ```
-   Neues Saison-Rating = 1500 + (Altes Rating - 1500) * 0.5
-   ```
-3. Diese Berechnung reduziert extreme Ratings und gibt Spielern mit niedrigeren Ratings die Chance, in der neuen Saison aufzuholen 
+### 3. Match-Anzeige
+- Anzeige der ELO-Änderung nach jedem Spiel
+- Historische ELO-Werte zum Zeitpunkt des Matches
+
+### 4. Statistiken
+- ELO-Entwicklung über Zeit
+- Vergleiche zwischen Spielern
+- Saisonale ELO-Analysen
+
+## 🚀 Vorteile der SSOT-ELO-Architektur
+
+### 1. Automatische Konsistenz
+- **Immer korrekt**: ELO-Ratings werden bei jedem Aufruf neu berechnet
+- **Keine Sync-Probleme**: Unmöglich, inkonsistente ELO-Werte zu haben
+- **Automatische Korrektur**: Änderungen in `matches.json` propagieren sofort
+
+### 2. Vollständige Nachvollziehbarkeit
+- **Transparenz**: Jede ELO-Änderung ist nachvollziehbar
+- **Debugging**: Einfache Fehlersuche bei ELO-Problemen
+- **Audit-Trail**: Komplette Historie aus einer Quelle
+
+### 3. Performance & Memory
+- **Lazy Loading**: ELO-Daten nur bei Bedarf berechnet
+- **Cache-Integration**: Nutzt ComputationService-Cache
+- **Memory-effizient**: Keine redundante Speicherung
+
+### 4. Flexibilität
+- **ELO-Anpassungen**: Einfache Änderung der Berechnungslogik
+- **Historische Korrekturen**: Match-Korrekturen propagieren automatisch
+- **Neue Features**: Einfache Integration neuer ELO-Varianten
+
+## 🔧 Saisonale Anpassungen
+
+Am Ende einer Saison können ELO-Ratings angepasst werden:
+
+```php
+class ComputationService
+{
+    /**
+     * Berechnet Saison-Start-Rating basierend auf vorherigem Rating
+     */
+    public function calculateSeasonStartRating(int $previousRating): int
+    {
+        // Regression zur Mitte: 50% des Unterschieds zu 1000
+        return 1000 + (int)(($previousRating - 1000) * 0.5);
+    }
+}
+```
+
+Diese Berechnung:
+1. Reduziert extreme Ratings
+2. Gibt Spielern mit niedrigeren Ratings die Chance aufzuholen
+3. Behält relative Unterschiede bei
+
+## 🔮 Erweiterungsmöglichkeiten
+
+### Neue ELO-Varianten
+- **Zeitbasierte Gewichtung**: Neuere Matches haben mehr Einfluss
+- **Saisonale K-Faktoren**: Verschiedene K-Faktoren pro Saison
+- **Skill-basierte Anpassungen**: Dynamische K-Faktoren basierend auf Spielstärke
+
+### Advanced Analytics
+```php
+// ELO-Volatilität berechnen
+public function calculateEloVolatility(string $playerId): float
+{
+    $eloHistory = $this->computeEloHistory($playerId, $matches);
+    $changes = array_column($eloHistory, 'change');
+    return $this->calculateStandardDeviation($changes);
+}
+
+// ELO-Momentum berechnen
+public function calculateEloMomentum(string $playerId, int $lastNMatches = 5): float
+{
+    $recentMatches = array_slice($matches, -$lastNMatches);
+    $recentChanges = array_map(fn($m) => $this->getEloChangeForMatch($playerId, $m), $recentMatches);
+    return array_sum($recentChanges) / count($recentChanges);
+}
+```
+
+---
+
+## 📋 Zusammenfassung
+
+Das **SSOT-ELO-System** bietet:
+
+✅ **Automatische Konsistenz**: Immer korrekte ELO-Ratings  
+✅ **Vollständige Nachvollziehbarkeit**: Jede Änderung ist transparent  
+✅ **Performance**: Memory-effizient durch Lazy Loading  
+✅ **Flexibilität**: Einfache Anpassungen der Berechnungslogik  
+✅ **Wartbarkeit**: Zentrale ELO-Logik im ComputationService  
+
+**Das ELO-System ist vollständig in die SSOT-Architektur integriert und zukunftssicher! 🎉** 

@@ -1,199 +1,310 @@
-# Achievement-System
+# Achievement-System (SSOT-Architektur)
 
-Dieses Dokument beschreibt das Achievement-System (Badges) der Kickerliga, das Spielern automatisch besondere Auszeichnungen für verschiedene Leistungen verleiht.
+Dieses Dokument beschreibt das Achievement-System der Kickerliga nach der **Single Source of Truth** Umstellung, das Spielern automatisch besondere Auszeichnungen für verschiedene Leistungen verleiht.
 
-## Übersicht
+## 🎯 SSOT-Prinzip für Achievements
 
-Das Achievement-System dient dazu, Spieler für besondere Leistungen zu belohnen und die Motivation und das Engagement zu fördern. Achievements (Badges) werden automatisch basierend auf der Spielerperformance vergeben und auf Spielerprofilen angezeigt.
+Das Achievement-System folgt dem **Single Source of Truth** Prinzip:
+- **Alle Achievements werden zur Laufzeit aus `matches.json` berechnet**
+- **Keine separate Speicherung** von Achievement-Daten
+- **Automatische Konsistenz** - Achievements sind immer aktuell
+- **Einfache Erweiterung** - neue Achievements ohne Datenmigration
 
-## Arten von Achievements
+## 🏆 Arten von Achievements
 
-Basierend auf der README implementieren wir folgende Achievements:
+Basierend auf der aktuellen Implementierung gibt es **12 verschiedene Achievement-Typen**:
 
 | Badge | Name | Beschreibung | Bedingung |
 |-------|------|--------------|-----------|
-| 🏆 | Winning Streak | Siegesserie | 3+ oder 5+ Siege in Folge |
-| 👑 | Höchster Sieg | Deutlicher Sieg | 10+ Tore Differenz |
-| 💀 | Bad Keeper | Schwache Defensive | Meiste Gegentore |
-| ⚽ | Torschützenkönig | Offensivstärke | Meiste erzielte Tore |
+| 🏆 | Winning Streak (3) | Siegesserie | 3 Siege in Folge |
+| 🔥 | Winning Streak (5) | Große Siegesserie | 5 Siege in Folge |
+| 👑 | Höchster Sieg | Deutlicher Sieg | 5+ Tore Differenz in einem Spiel |
+| 💀 | Bad Keeper | Schwache Defensive | Meiste Gegentore (relativ) |
+| ⚽ | Torschützenkönig | Offensivstärke | Meiste erzielte Tore (relativ) |
 | ⭐ | Perfekte Bilanz | Nur Siege | 100% Siegquote (min. 3 Spiele) |
-| 🚀 | Tormaschine | Treffsicherheit | Ø 5+ Tore/Spiel (min. 2 Spiele) |
+| 🚀 | Tormaschine | Treffsicherheit | Ø 8+ Tore/Spiel (min. 3 Spiele) |
 | 🛡️ | Eiserne Abwehr | Starke Defensive | Ø <3 Gegentore/Spiel (min. 3 Spiele) |
 | 😵 | Unglücksrabe | Pechsträhne | 0 Siege bei 5+ Spielen |
 | 🎖️ | Veteran | Erfahrung | 10+ absolvierte Spiele |
-| 📈 | Tordifferenz-König | Dominanz | +20 Tordifferenz insgesamt |
+| 📈 | Tordifferenz-König | Dominanz | +15 Tordifferenz insgesamt |
 | ⚖️ | Ausgewogen | Balance | Gleiche Anzahl Tore/Gegentore (min. 5 Spiele) |
 
-## Implementierungsdetails
+## ⚙️ SSOT-Implementierung
 
-### Achievement-Datenmodell
+### ComputationService - Achievement-Engine
 
-Jedes Achievement wird als Objekt in der Datenstruktur dargestellt:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Models;
-
-class Achievement
-{
-    private string $id;
-    private string $name;
-    private string $description;
-    private string $icon;
-    private string $condition;
-    private int $level = 1;
-    private bool $isActive = true;
-    
-    // Getter und Setter...
-}
-```
-
-### Achievement-Speicherformat
-
-Die Achievements werden in JSON-Dateien gespeichert. Jeder Spieler hat eine Liste seiner errungenen Badges:
-
-```json
-{
-  "player_id": "player123",
-  "achievements": [
-    {
-      "id": "winning_streak",
-      "earned_date": "2023-09-15",
-      "level": 1,
-      "match_id": "match456"
-    },
-    {
-      "id": "high_score",
-      "earned_date": "2023-09-18",
-      "level": 2,
-      "match_id": "match789"
-    }
-  ]
-}
-```
-
-Für Badges mit mehreren Stufen (z.B. Winning Streak 3+ und 5+) verwenden wir Levels.
-
-### Achievement-Service
-
-Der `AchievementService` ist verantwortlich für die Überprüfung und Vergabe von Achievements:
+Alle Achievements werden im `ComputationService` berechnet:
 
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Services;
-
-use App\Models\Player;
-use App\Models\Match;
-
-class AchievementService
+class ComputationService
 {
-    private $playerService;
-    private $matchService;
-    
-    public function __construct(PlayerService $playerService, MatchService $matchService)
+    /**
+     * Berechnet alle Achievements für einen Spieler aus matches.json
+     */
+    public function computePlayerAchievements(string $playerId, array $matches): array
     {
-        $this->playerService = $playerService;
-        $this->matchService = $matchService;
-    }
-    
-    public function checkAchievementsForPlayer(string $playerId): array
-    {
-        $player = $this->playerService->getPlayer($playerId);
-        $matches = $this->matchService->getMatchesForPlayer($playerId);
+        $achievements = [];
         
-        $earnedAchievements = [];
-        
-        // Prüfe alle möglichen Achievements
-        $earnedAchievements = array_merge(
-            $earnedAchievements,
-            $this->checkWinningStreak($player, $matches),
-            $this->checkHighestWin($player, $matches),
-            $this->checkBadKeeper($player, $matches),
-            // ... weitere Achievement-Checks
-        );
-        
-        return $earnedAchievements;
-    }
-    
-    private function checkWinningStreak(Player $player, array $matches): array
-    {
-        // Implementierung für Winning Streak Achievement
-        $earnedAchievements = [];
-        $streakCount = 0;
-        
-        foreach ($matches as $match) {
-            if ($match->isWinner($player->getId())) {
-                $streakCount++;
-            } else {
-                $streakCount = 0;
-            }
-            
-            if ($streakCount >= 3 && $streakCount < 5) {
-                $earnedAchievements[] = [
-                    'id' => 'winning_streak',
-                    'level' => 1,
-                    'match_id' => $match->getId()
-                ];
-            } elseif ($streakCount >= 5) {
-                $earnedAchievements[] = [
-                    'id' => 'winning_streak',
-                    'level' => 2,
-                    'match_id' => $match->getId()
-                ];
-            }
+        if (empty($matches)) {
+            return $achievements;
         }
         
-        return $earnedAchievements;
+        // Berechne Statistiken für Achievement-Checks
+        $stats = $this->computePlayerStatistics($playerId, $matches);
+        
+        // Prüfe alle Achievement-Typen
+        $achievements = array_merge(
+            $achievements,
+            $this->checkWinningStreakAchievements($playerId, $matches),
+            $this->checkHighScoreAchievements($playerId, $matches),
+            $this->checkStatisticalAchievements($playerId, $stats, $matches),
+            $this->checkRelativeAchievements($playerId, $stats)
+        );
+        
+        return $achievements;
     }
-    
-    // Weitere Methoden für andere Achievements...
 }
 ```
 
-## Integration im System
+### Achievement-Berechnung zur Laufzeit
 
-Das Achievement-System ist in verschiedene Teile des Systems integriert:
+**Winning Streak Achievements:**
+```php
+private function checkWinningStreakAchievements(string $playerId, array $matches): array
+{
+    $achievements = [];
+    $currentStreak = 0;
+    $maxStreak = 0;
+    
+    foreach ($matches as $match) {
+        $isWinner = $this->isPlayerWinner($playerId, $match);
+        
+        if ($isWinner) {
+            $currentStreak++;
+            $maxStreak = max($maxStreak, $currentStreak);
+        } else {
+            $currentStreak = 0;
+        }
+    }
+    
+    // Winning Streak (3)
+    if ($maxStreak >= 3) {
+        $achievements[] = [
+            'id' => 'winning_streak_3',
+            'name' => '🏆 Winning Streak (3)',
+            'description' => '3 Siege in Folge',
+            'unlockedAt' => $this->findStreakUnlockTime($playerId, $matches, 3)
+        ];
+    }
+    
+    // Winning Streak (5)
+    if ($maxStreak >= 5) {
+        $achievements[] = [
+            'id' => 'winning_streak_5',
+            'name' => '🔥 Winning Streak (5)',
+            'description' => '5 Siege in Folge',
+            'unlockedAt' => $this->findStreakUnlockTime($playerId, $matches, 5)
+        ];
+    }
+    
+    return $achievements;
+}
+```
 
-### Nach Spielen
+**Statistische Achievements:**
+```php
+private function checkStatisticalAchievements(string $playerId, array $stats, array $matches): array
+{
+    $achievements = [];
+    
+    // Perfekte Bilanz
+    if ($stats['matchesPlayed'] >= 3 && $stats['losses'] === 0) {
+        $achievements[] = [
+            'id' => 'perfect_record',
+            'name' => '⭐ Perfekte Bilanz',
+            'description' => '100% Siegquote (min. 3 Spiele)',
+            'unlockedAt' => end($matches)['playedAt']
+        ];
+    }
+    
+    // Tormaschine
+    $avgGoalsScored = $stats['matchesPlayed'] > 0 ? $stats['goalsScored'] / $stats['matchesPlayed'] : 0;
+    if ($stats['matchesPlayed'] >= 3 && $avgGoalsScored >= 8) {
+        $achievements[] = [
+            'id' => 'goal_machine',
+            'name' => '🚀 Tormaschine',
+            'description' => 'Ø 8+ Tore/Spiel (min. 3 Spiele)',
+            'unlockedAt' => end($matches)['playedAt']
+        ];
+    }
+    
+    // Eiserne Abwehr
+    $avgGoalsConceded = $stats['matchesPlayed'] > 0 ? $stats['goalsConceded'] / $stats['matchesPlayed'] : 0;
+    if ($stats['matchesPlayed'] >= 3 && $avgGoalsConceded < 3) {
+        $achievements[] = [
+            'id' => 'iron_defense',
+            'name' => '🛡️ Eiserne Abwehr',
+            'description' => 'Ø <3 Gegentore/Spiel (min. 3 Spiele)',
+            'unlockedAt' => end($matches)['playedAt']
+        ];
+    }
+    
+    // Weitere statistische Achievements...
+    
+    return $achievements;
+}
+```
 
-Nach jedem registrierten Spiel:
-1. Der `MatchController` ruft den `AchievementService` auf
-2. Der Service überprüft alle möglichen neuen Achievements für beide Spieler
-3. Neue Achievements werden gespeichert und dem Spieler zugewiesen
+### Relative Achievements
+
+Für Achievements wie "Torschützenkönig" und "Bad Keeper" werden alle Spieler verglichen:
+
+```php
+private function checkRelativeAchievements(string $playerId, array $stats): array
+{
+    $achievements = [];
+    $allPlayersData = $this->computeAllPlayerData();
+    
+    if (count($allPlayersData) < 2) {
+        return $achievements; // Braucht mindestens 2 Spieler für Vergleiche
+    }
+    
+    // Torschützenkönig
+    $maxGoalsScored = max(array_column($allPlayersData, 'statistics.goalsScored'));
+    if ($stats['goalsScored'] === $maxGoalsScored && $stats['goalsScored'] > 0) {
+        $achievements[] = [
+            'id' => 'top_scorer',
+            'name' => '⚽ Torschützenkönig',
+            'description' => 'Meiste erzielte Tore',
+            'unlockedAt' => time()
+        ];
+    }
+    
+    // Bad Keeper
+    $maxGoalsConceded = max(array_column($allPlayersData, 'statistics.goalsConceded'));
+    if ($stats['goalsConceded'] === $maxGoalsConceded && $stats['goalsConceded'] > 0) {
+        $achievements[] = [
+            'id' => 'bad_keeper',
+            'name' => '💀 Bad Keeper',
+            'description' => 'Meiste Gegentore',
+            'unlockedAt' => time()
+        ];
+    }
+    
+    return $achievements;
+}
+```
+
+## 🔄 Datenfluss für Achievements
+
+```
+matches.json (SINGLE SOURCE OF TRUTH)
+       ↓
+ComputationService::computePlayerAchievements()
+       ↓
+┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
+│ Winning Streaks │ High Score      │ Statistical     │ Relative        │
+│ - 3er Serie     │ - 5+ Tore Diff  │ - Perfekt       │ - Torschütze    │
+│ - 5er Serie     │ - Höchster Sieg │ - Tormaschine   │ - Bad Keeper    │
+│                 │                 │ - Eiserne Abwehr│                 │
+└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+       ↓
+Computed Achievements Array → PlayerService → Controller → Templates
+```
+
+## 🎨 UI-Integration
 
 ### Spielerprofile
+```php
+// Im PlayerController
+$player = $this->playerService->getPlayerById($playerId);
+$achievements = $player['achievements']; // Zur Laufzeit berechnet
 
-Auf Spielerprofilen:
-1. Alle verdienten Badges werden angezeigt
-2. Badges sind nach Datum sortiert
-3. Badges haben Tooltips mit Erklärungen
-4. Spezielle Hervorhebung für seltene Achievements
+// Im Template
+foreach ($achievements as $achievement) {
+    echo "<span class='badge achievement' title='{$achievement['description']}'>";
+    echo $achievement['name'];
+    echo "</span>";
+}
+```
 
-### Startseite / Dashboard
+### Achievement-Anzeige
+- **Farbige Icons** basierend auf Achievement-Typ
+- **Tooltips** mit detaillierten Beschreibungen
+- **Sortierung** nach Unlock-Datum
+- **Responsive Design** für mobile Geräte
 
-Auf der Startseite:
-1. Kürzlich verdiente Achievements werden in einem Feed angezeigt
-2. Leaderboard für die Spieler mit den meisten Badges
+## 🚀 Vorteile der SSOT-Achievement-Architektur
 
-## UI-Darstellung
+### 1. Automatische Konsistenz
+- **Immer aktuell**: Achievements werden bei jedem Aufruf neu berechnet
+- **Keine veralteten Daten**: Unmöglich, inkonsistente Achievement-Zustände zu haben
+- **Automatische Korrektur**: Änderungen in `matches.json` propagieren sofort
 
-Die Badges werden visuell attraktiv dargestellt:
-- Farbige Icons basierend auf Phosphor Icons
-- Unterschiedliche Rahmen je nach Seltenheit des Achievements
-- Animations-Effekte beim Erhalt eines neuen Badges
-- Tooltips mit detaillierten Informationen
+### 2. Einfache Erweiterung
+```php
+// Neues Achievement hinzufügen - nur eine Methode!
+private function checkNewAchievement(string $playerId, array $stats): array
+{
+    $achievements = [];
+    
+    // Neue Logik hier
+    if ($stats['someCondition']) {
+        $achievements[] = [
+            'id' => 'new_achievement',
+            'name' => '🆕 Neues Achievement',
+            'description' => 'Neue Bedingung erfüllt',
+            'unlockedAt' => time()
+        ];
+    }
+    
+    return $achievements;
+}
+```
 
-## Erweiterbarkeit
+### 3. Performance & Memory
+- **Lazy Loading**: Achievements nur bei Bedarf berechnet
+- **Cache-Integration**: Nutzt ComputationService-Cache
+- **Memory-effizient**: Keine redundante Speicherung
 
-Das System ist so konzipiert, dass leicht neue Achievements hinzugefügt werden können:
-1. Neuen Achievement-Typ in der Konfigurationsdatei definieren
-2. Prüflogik im AchievementService implementieren
-3. Icon und Styling hinzufügen
+### 4. Debugging & Wartung
+- **Nachvollziehbar**: Alle Achievement-Logik in einer Klasse
+- **Testbar**: Einfache Unit-Tests möglich
+- **Transparent**: Jederzeit nachprüfbar, warum ein Achievement vergeben wurde
 
-Neue Achievements werden automatisch im System berücksichtigt, ohne dass bestehende Spielerdaten geändert werden müssen. 
+## 🔮 Erweiterungsmöglichkeiten
+
+### Neue Achievement-Typen
+- **Zeitbasierte Achievements**: "Früher Vogel" (Spiel vor 9 Uhr)
+- **Saisonale Achievements**: "Saisonkönig" (meiste Siege in einer Saison)
+- **Combo-Achievements**: "Allrounder" (mehrere andere Achievements)
+- **Tischseiten-Achievements**: "Blau-Spezialist" (hohe Winrate auf blauer Seite)
+
+### Achievement-Levels
+```php
+// Mehrstufige Achievements
+'veteran' => [
+    'level_1' => ['matches' => 10, 'name' => '🎖️ Veteran'],
+    'level_2' => ['matches' => 25, 'name' => '🏅 Erfahrener Veteran'],
+    'level_3' => ['matches' => 50, 'name' => '🏆 Legende']
+]
+```
+
+### Seltene Achievements
+- **Dynamische Schwierigkeit**: Achievements werden schwerer, je mehr Spieler sie haben
+- **Zeitlich begrenzte Achievements**: Nur in bestimmten Zeiträumen verfügbar
+- **Geheime Achievements**: Werden nicht angezeigt, bis sie freigeschaltet sind
+
+---
+
+## 📋 Zusammenfassung
+
+Das **SSOT-Achievement-System** bietet:
+
+✅ **Automatische Konsistenz**: Immer aktuelle Achievements  
+✅ **Einfache Erweiterung**: Neue Achievements ohne Datenmigration  
+✅ **Performance**: Memory-effizient durch Lazy Loading  
+✅ **Wartbarkeit**: Alle Logik zentral im ComputationService  
+✅ **Flexibilität**: Einfache Anpassung von Bedingungen  
+
+**Das Achievement-System ist vollständig in die SSOT-Architektur integriert und zukunftssicher! 🎉** 

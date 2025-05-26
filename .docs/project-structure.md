@@ -1,1 +1,0 @@
-# Projektstruktur - Kickerliga Management System
