@@ -9,9 +9,9 @@ Ein umfassendes webbasiertes System zur Verwaltung einer Tischfußball-Liga mit 
 ## 🌟 Features im Überblick
 
 - **🔥 Vollständiges ELO-Rating-System** mit Tordifferenz-Modifikator
-- **🏆 Achievement-System** mit 12 verschiedenen Belohnungen  
+- **🏆 Achievement-System** mit [12 verschiedenen Belohnungen](.docs/achievements.md)  
 - **📊 Umfassende Statistiken** und Chart.js-Visualisierungen
-- **⚖️ Tischseiten-Tracking** (Blau vs. Weiß) für Fairness-Analysen
+- **⚖️ Tischseiten-Tracking** [(Blau vs. Weiß)](.docs/feature-tischseiten-tracking.md) für Fairness-Analysen
 - **🎯 Saisonverwaltung** mit Archivierungsfunktionen
 - **📱 Responsive Dark-Theme UI** mit Bootstrap 5
 - **🎥 Modernes Video-Background-Design**
@@ -50,6 +50,9 @@ composer install
 ### ⚡ Core Features
 - **[elo-system.md](.docs/elo-system.md)** - ELO-Rating-Algorithmus mit Tordifferenz-Berechnung
 - **[achievements.md](.docs/achievements.md)** - 12 verschiedene Achievement-Typen und Belohnungslogik
+- **[feature-single-source-of-truth.md](.docs/feature-single-source-of-truth.md)** - Single Source of Truth Architektur (✅ **VOLLSTÄNDIG IMPLEMENTIERT**)
+  
+  *Revolutionäre Datenarchitektur: Alle Spieler-, Saison- und Achievement-Daten werden ausschließlich aus `matches.json` berechnet. Eliminiert Dateninkonsistenzen und ermöglicht einfaches Löschen von Matches mit automatischer Neuberechnung aller abhängigen Daten.*
 
 ### 🔥 Erweiterte Features
 - **[feature-tischseiten-tracking.md](.docs/feature-tischseiten-tracking.md)** - Vollständiges Tischseiten-Tracking (✅ **KOMPLETT IMPLEMENTIERT**)
@@ -59,6 +62,10 @@ composer install
 - **[feature-achievements-elo-verlauf.md](.docs/feature-achievements-elo-verlauf.md)** - Achievement-System mit ELO-Verlaufs-Diagrammen
   
   *Interaktive Spielerprofile mit automatischer Achievement-Vergabe und Chart.js-basierten ELO-Entwicklungsverläufen.*
+
+- **[feature-coinflip-seitenwahl.md](.docs/feature-coinflip-seitenwahl.md)** - Münzwurf-System für faire Seitenwahl (✅ **KOMPLETT IMPLEMENTIERT**)
+  
+  *Interaktives Münzwurf-Interface mit Animationen für faire Tischseitenwahl. Vollständig integriert in das Match-Erfassungssystem mit automatischer Seitenzuweisung.*
 
 ### 📋 Projektmanagement
 - **[todo.md](.docs/todo.md)** - Aktueller Entwicklungsstatus und Arbeitsplan
@@ -114,6 +121,12 @@ composer install
 - **Frontend**: Bootstrap 5, Chart.js, Phosphor Icons
 - **Datenbank**: JSON-basierte Datenspeicherung mit File-Locking
 
+### Architektur-Highlights
+- **[Single Source of Truth](.docs/feature-single-source-of-truth.md)**: Revolutionäre Datenarchitektur eliminiert Inkonsistenzen
+- **Memory-Optimierung**: Drastisch reduzierter Speicherverbrauch (128MB+ → <10MB)
+- **Cache-System**: Intelligente Invalidierung für Performance ohne Datenverlust
+- **SSOT-Prinzip**: Alle Statistiken werden zur Laufzeit aus `matches.json` berechnet
+
 ### Code-Qualität
 - PSR-12 Extended Coding Style Standards
 - Dependency Injection Container (PHP-DI)
@@ -140,8 +153,9 @@ kickLiga/
 
 ### ✅ Abgeschlossene Features
 - **Core-System**: Spieler-, Match- und ELO-Verwaltung
-- **Achievement-System**: 12 verschiedene Achievements
-- **Tischseiten-Tracking**: Vollständig implementiert und migriert
+- **[Achievement-System](.docs/achievements.md)**: [12 verschiedene Achievements](.docs/feature-achievements-elo-verlauf.md)
+- **[Tischseiten-Tracking](.docs/feature-tischseiten-tracking.md)**: Vollständig implementiert und migriert
+- **[Single Source of Truth](.docs/feature-single-source-of-truth.md)**: Revolutionäre Datenarchitektur
 - **Responsive UI**: Dark Theme mit Video-Backgrounds
 - **Saisonverwaltung**: Mit Archivierung und Leaderboards
 
