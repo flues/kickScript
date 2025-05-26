@@ -62,8 +62,13 @@ class PlayerService
         
         $success = $this->dataService->write(self::PLAYERS_META_FILE, $playersMeta);
         
-        if ($success && $this->logger) {
-            $this->logger->info("Spieler-Metadaten {$player->getName()} (ID: {$playerId}) gespeichert");
+        if ($success) {
+            // Invalidiere den Cache, damit neue Spieler sofort sichtbar werden
+            $this->computationService->invalidatePlayerMetaCache();
+            
+            if ($this->logger) {
+                $this->logger->info("Spieler-Metadaten {$player->getName()} (ID: {$playerId}) gespeichert");
+            }
         }
         
         return $success;
@@ -133,8 +138,13 @@ class PlayerService
         
         $success = $this->dataService->write(self::PLAYERS_META_FILE, $playersMeta);
         
-        if ($success && $this->logger) {
-            $this->logger->info("Spieler-Metadaten {$playerName} (ID: {$playerId}) gelöscht");
+        if ($success) {
+            // Invalidiere den Cache, damit gelöschte Spieler sofort verschwinden
+            $this->computationService->invalidatePlayerMetaCache();
+            
+            if ($this->logger) {
+                $this->logger->info("Spieler-Metadaten {$playerName} (ID: {$playerId}) gelöscht");
+            }
         }
         
         return $success;

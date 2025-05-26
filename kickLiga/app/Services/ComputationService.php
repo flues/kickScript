@@ -38,23 +38,33 @@ class ComputationService
     }
 
     /**
-     * Berechnet alle Spielerdaten basierend auf matches.json
+     * Berechnet alle Spielerdaten basierend auf matches.json UND players_meta.json
      * OPTIMIERT: Lädt Matches nur einmal und verarbeitet sie effizient
+     * ERWEITERT: Berücksichtigt auch Spieler ohne Matches aus players_meta.json
      */
     public function computeAllPlayerData(): array
     {
         $matches = $this->getAllMatches();
-        if (empty($matches)) {
+        
+        // Extrahiere Spieler-IDs aus Matches
+        $playerIdsFromMatches = empty($matches) ? [] : $this->extractPlayerIds($matches);
+        
+        // Extrahiere Spieler-IDs aus players_meta.json
+        $playerIdsFromMeta = $this->extractPlayerIdsFromMeta();
+        
+        // Kombiniere beide Listen (ohne Duplikate)
+        $allPlayerIds = array_unique(array_merge($playerIdsFromMatches, $playerIdsFromMeta));
+        
+        if (empty($allPlayerIds)) {
             return [];
         }
         
-        $playerIds = $this->extractPlayerIds($matches);
         $playersData = [];
 
         // Gruppiere Matches nach Spielern für effiziente Verarbeitung
-        $playerMatches = $this->groupMatchesByPlayer($matches);
+        $playerMatches = empty($matches) ? [] : $this->groupMatchesByPlayer($matches);
 
-        foreach ($playerIds as $playerId) {
+        foreach ($allPlayerIds as $playerId) {
             $playerSpecificMatches = $playerMatches[$playerId] ?? [];
             $playersData[$playerId] = $this->computePlayerDataFromMatches($playerId, $playerSpecificMatches);
         }
@@ -386,6 +396,20 @@ class ComputationService
         return array_unique($playerIds);
     }
 
+    /**
+     * Extrahiert alle Spieler-IDs aus players_meta.json
+     * Ermöglicht es, auch Spieler ohne Matches anzuzeigen
+     */
+    private function extractPlayerIdsFromMeta(): array
+    {
+        $playersMeta = $this->dataService->read(self::PLAYERS_META_FILE);
+        if (empty($playersMeta) || !is_array($playersMeta)) {
+            return [];
+        }
+        
+        return array_keys($playersMeta);
+    }
+
     private function getPlayerMeta(string $playerId): array
     {
         if ($this->cachedPlayersMeta === null) {
@@ -626,6 +650,19 @@ class ComputationService
         
         if ($this->logger) {
             $this->logger->info('Cache invalidiert - alle Daten werden neu berechnet');
+        }
+    }
+
+    /**
+     * Invalidiert nur den Spieler-Meta-Cache
+     * Wird nach Änderungen an players_meta.json aufgerufen
+     */
+    public function invalidatePlayerMetaCache(): void
+    {
+        $this->cachedPlayersMeta = null;
+        
+        if ($this->logger) {
+            $this->logger->info('Spieler-Meta-Cache invalidiert');
         }
     }
 
