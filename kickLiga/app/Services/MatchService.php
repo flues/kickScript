@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\GameMatch;
-use App\Models\Player;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
@@ -14,7 +13,7 @@ class MatchService
     private const MATCHES_FILE = 'matches';
 
     private DataService $dataService;
-    private PlayerService $playerService;
+    private ?PlayerService $playerService;
     private EloService $eloService;
     private ?LoggerInterface $logger;
 
@@ -22,13 +21,13 @@ class MatchService
      * MatchService Konstruktor
      *
      * @param DataService $dataService DataService-Instanz
-     * @param PlayerService $playerService PlayerService-Instanz
+     * @param PlayerService|null $playerService PlayerService-Instanz (optional für SSOT)
      * @param EloService $eloService EloService-Instanz
      * @param LoggerInterface|null $logger Logger-Instanz
      */
     public function __construct(
         DataService $dataService,
-        PlayerService $playerService,
+        ?PlayerService $playerService,
         EloService $eloService,
         ?LoggerInterface $logger = null
     ) {
@@ -67,36 +66,21 @@ class MatchService
         // Validiere die Seitenwahl
         $this->validateSides($player1Side, $player2Side);
         
-        // Hole die Spieler
-        $player1 = $this->playerService->getPlayerById($player1Id);
-        $player2 = $this->playerService->getPlayerById($player2Id);
-        
-        if (!$player1 || !$player2) {
-            throw new RuntimeException('Ein oder beide Spieler wurden nicht gefunden.');
-        }
+        // Validiere Spieler-IDs (prüfe players_meta.json)
+        $this->validatePlayerIds($player1Id, $player2Id);
         
         // Erstelle das Match mit Seitenwahl
         $match = new GameMatch($player1Id, $player2Id, $scorePlayer1, $scorePlayer2, $playedAt, $notes, $player1Side, $player2Side, $coinflipData);
         
-        // Berechne die ELO-Änderungen
-        $match = $this->eloService->processMatchRatings($match, $player1, $player2);
-        
-        // Aktualisiere die Spielerstatistiken
-        $this->updatePlayerStatistics($player1, $player2, $match);
-        
-        // Speichere das Match
+        // Speichere das Match (ELO wird im SSOT-Konzept nicht hier berechnet)
         $success = $this->saveMatch($match);
         
         if (!$success) {
             throw new RuntimeException('Das Match konnte nicht gespeichert werden.');
         }
         
-        // Speichere die aktualisierten Spieler
-        $this->playerService->savePlayer($player1);
-        $this->playerService->savePlayer($player2);
-        
         if ($this->logger) {
-            $this->logger->info("Match erstellt: {$player1->getName()} vs {$player2->getName()} ({$scorePlayer1}:{$scorePlayer2}) - Seiten: {$player1Side} vs {$player2Side}");
+            $this->logger->info("Match erstellt: {$player1Id} vs {$player2Id} ({$scorePlayer1}:{$scorePlayer2}) - Seiten: {$player1Side} vs {$player2Side}");
         }
         
         return $match;
@@ -123,6 +107,26 @@ class MatchService
         // Prüfe, ob beide Spieler verschiedene Seiten haben
         if ($player1Side === $player2Side) {
             throw new RuntimeException("Beide Spieler können nicht auf derselben Seite spielen. Spieler 1: {$player1Side}, Spieler 2: {$player2Side}");
+        }
+    }
+
+    /**
+     * Validiert Spieler-IDs anhand der players_meta.json
+     *
+     * @param string $player1Id ID des ersten Spielers
+     * @param string $player2Id ID des zweiten Spielers
+     * @throws RuntimeException Wenn ein Spieler nicht gefunden wird
+     */
+    private function validatePlayerIds(string $player1Id, string $player2Id): void
+    {
+        $playersMeta = $this->dataService->read('players_meta');
+        
+        if (!isset($playersMeta[$player1Id])) {
+            throw new RuntimeException("Spieler 1 mit ID {$player1Id} wurde nicht gefunden.");
+        }
+        
+        if (!isset($playersMeta[$player2Id])) {
+            throw new RuntimeException("Spieler 2 mit ID {$player2Id} wurde nicht gefunden.");
         }
     }
 
@@ -321,35 +325,7 @@ class MatchService
         return $updatedCount;
     }
 
-    /**
-     * Aktualisiert die Spielerstatistiken basierend auf dem Match
-     *
-     * @param Player $player1 Spieler 1
-     * @param Player $player2 Spieler 2
-     * @param GameMatch $match Das Match
-     */
-    private function updatePlayerStatistics(Player $player1, Player $player2, GameMatch $match): void
-    {
-        // Spieler 1 aktualisieren
-        $player1->updateMatchStatistics(
-            $match->isPlayer1Winner(),
-            $match->isDraw(),
-            $match->getScorePlayer1(),
-            $match->getScorePlayer2()
-        );
-        
-        // Spieler 2 aktualisieren
-        $player2->updateMatchStatistics(
-            $match->isPlayer2Winner(),
-            $match->isDraw(),
-            $match->getScorePlayer2(),
-            $match->getScorePlayer1()
-        );
-        
-        if ($this->logger) {
-            $this->logger->info("Spielerstatistiken aktualisiert für: {$player1->getName()} und {$player2->getName()}");
-        }
-    }
+
 
     /**
      * Gibt alle Matches als Array zurück (interne Verwendung)

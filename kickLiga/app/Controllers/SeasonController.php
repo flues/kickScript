@@ -72,25 +72,42 @@ class SeasonController
             ]);
         }
 
-        // Sortierte Tabelle abrufen
-        $standings = $season->getSortedStandings();
+        // Sortierte Tabelle abrufen (Single Source of Truth)
+        $standings = $this->seasonService->getSeasonStandings($seasonId);
         
-        // Letzten Spiele der Saison abrufen
-        $matches = $this->matchService->getAllMatches();
+        // Saison-Statistiken abrufen (Single Source of Truth)
+        $seasonStatistics = $this->seasonService->getSeasonStatistics($seasonId);
+        
+        // Saison-Matches abrufen
+        $seasonMatches = $this->seasonService->getSeasonMatches($season);
         
         // Sortiere Matches nach Datum (neueste zuerst)
-        usort($matches, function ($a, $b) {
+        usort($seasonMatches, function ($a, $b) {
             return $b->getPlayedAt()->getTimestamp() - $a->getPlayedAt()->getTimestamp();
         });
         
         // Begrenze auf die letzten 10 Spiele
-        $recentMatches = array_slice($matches, 0, 10);
+        $recentMatches = array_slice($seasonMatches, 0, 10);
+        
+        // Erweitere Match-Daten um Spielerinformationen
+        $enrichedMatches = [];
+        foreach ($recentMatches as $match) {
+            $player1 = $this->playerService->getPlayerById($match->getPlayer1Id());
+            $player2 = $this->playerService->getPlayerById($match->getPlayer2Id());
+            
+            $enrichedMatches[] = [
+                'match' => $match,
+                'player1' => $player1,
+                'player2' => $player2
+            ];
+        }
         
         return $this->view->render($response, 'seasons/view.twig', [
             'title' => $season->getName(),
             'season' => $season,
             'standings' => $standings,
-            'recentMatches' => $recentMatches,
+            'seasonStatistics' => $seasonStatistics,
+            'recentMatches' => $enrichedMatches,
             'isActive' => $season->isActive(),
             'player_service' => $this->playerService
         ]);
@@ -142,9 +159,8 @@ class SeasonController
         try {
             $season = $this->seasonService->createSeason($name, $startDate);
             
-            // Jetzt aktualisieren wir die Saison mit allen vorhandenen Matches
-            $allMatches = $this->matchService->getAllMatches();
-            $this->seasonService->rebuildSeasonStandings($season->getId(), $allMatches);
+            // Single Source of Truth: Keine Notwendigkeit, Statistiken zu berechnen
+            // Sie werden zur Laufzeit aus matches.json berechnet
         } catch (\RuntimeException $e) {
             return $this->view->render($response->withStatus(500), 'seasons/create.twig', [
                 'title' => 'Neue Saison anlegen',

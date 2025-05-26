@@ -28,7 +28,7 @@
                 <div class="col-md-3">
                     <div class="card bg-gradient-dark text-center mb-3">
                         <div class="card-body">
-                            <h2 class="mb-0">{{ season.statistics.totalMatches }}</h2>
+                            <h2 class="mb-0">{{ seasonStatistics ? seasonStatistics.totalMatches : 0 }}</h2>
                             <small class="text-muted">Spiele gesamt</small>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
                 <div class="col-md-3">
                     <div class="card bg-gradient-dark text-center mb-3">
                         <div class="card-body">
-                            <h2 class="mb-0">{{ season.statistics.totalGoals }}</h2>
+                            <h2 class="mb-0">{{ seasonStatistics ? seasonStatistics.totalGoals : 0 }}</h2>
                             <small class="text-muted">Tore gesamt</small>
                         </div>
                     </div>
@@ -59,18 +59,18 @@
                 </div>
             </div>
             
-            {% if season.statistics.highestScore %}
+            {% if seasonStatistics and seasonStatistics.highestScore %}
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="card bg-gradient-dark">
                             <div class="card-body">
                                 <h5 class="card-title">Höchster Sieg</h5>
-                                {% set winner = player_service.getPlayerById(season.statistics.highestScore.winnerId) %}
-                                {% set loser = player_service.getPlayerById(season.statistics.highestScore.loserId) %}
+                                {% set winner = player_service.getPlayerById(seasonStatistics.highestScore.winnerId) %}
+                                {% set loser = player_service.getPlayerById(seasonStatistics.highestScore.loserId) %}
                                 <p class="mb-0">
                                     <strong>{{ winner.displayName }}</strong> vs. {{ loser.displayName }}
-                                    <span class="badge bg-success ms-2">{{ season.statistics.highestScore.score }}</span>
-                                    <small class="text-muted ms-2">({{ season.statistics.highestScore.date|date('d.m.Y') }})</small>
+                                    <span class="badge bg-success ms-2">{{ seasonStatistics.highestScore.score }}</span>
+                                    <small class="text-muted ms-2">({{ seasonStatistics.highestScore.date|date('d.m.Y') }})</small>
                                 </p>
                             </div>
                         </div>
@@ -164,12 +164,13 @@
                     </thead>
                     <tbody>
                         {% if recentMatches|length > 0 %}
-                            {% for match in recentMatches %}
+                            {% for matchData in recentMatches %}
+                                {% set match = matchData.match %}
+                                {% set player1 = matchData.player1 %}
+                                {% set player2 = matchData.player2 %}
                                 <tr>
                                     <td>{{ match.playedAt|date('d.m.Y H:i') }}</td>
                                     <td>
-                                        {% set player1 = player_service.getPlayerById(match.player1Id) %}
-                                        {% set player2 = player_service.getPlayerById(match.player2Id) %}
                                         
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div class="d-flex align-items-center">

@@ -34,7 +34,7 @@ return function (App $app) {
         $group->post('/coinflip', [MatchController::class, 'performCoinflip'])->setName('matches.coinflip.perform');
         $group->post('/coinflip-ajax', [MatchController::class, 'performCoinflipAjax'])->setName('matches.coinflip.ajax');
         $group->post('/coinflip-winner-side', [MatchController::class, 'coinflipWinnerSideChoice'])->setName('matches.coinflip.winner.side');
-        // Weitere Match-Routen hier (z.B. für Details, Bearbeiten, Löschen)
+        $group->post('/{id}/delete', [MatchController::class, 'deleteMatch'])->setName('matches.delete');
     });
 
     // Seasons

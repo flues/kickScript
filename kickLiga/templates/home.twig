@@ -36,7 +36,7 @@
                         <div class="col-md-3">
                             <div class="card bg-gradient-dark text-center mb-3">
                                 <div class="card-body">
-                                    <h3 class="mb-0">{{ activeSeason.statistics.totalMatches }}</h3>
+                                    <h3 class="mb-0">{{ seasonStatistics ? seasonStatistics.totalMatches : 0 }}</h3>
                                     <small class="text-muted">Spiele in der Saison</small>
                                 </div>
                             </div>
@@ -44,7 +44,7 @@
                         <div class="col-md-3">
                             <div class="card bg-gradient-dark text-center mb-3">
                                 <div class="card-body">
-                                    <h3 class="mb-0">{{ activeSeason.statistics.totalGoals }}</h3>
+                                    <h3 class="mb-0">{{ seasonStatistics ? seasonStatistics.totalGoals : 0 }}</h3>
                                     <small class="text-muted">Tore gesamt</small>
                                 </div>
                             </div>
@@ -52,7 +52,7 @@
                         <div class="col-md-3">
                             <div class="card bg-gradient-dark text-center mb-3">
                                 <div class="card-body">
-                                    <h3 class="mb-0">{{ activeSeason.getDurationInDays() }}</h3>
+                                    <h3 class="mb-0">{{ activeSeason.durationInDays }}</h3>
                                     <small class="text-muted">Tage aktiv</small>
                                 </div>
                             </div>
@@ -60,8 +60,11 @@
                         <div class="col-md-3">
                             <div class="card bg-gradient-dark text-center mb-3">
                                 <div class="card-body">
-                                    {% set now = "now"|date("Y-m-d") %}
-                                    {% set endDate = "now"|date_modify("last day of this month") %}
+                                    {% if activeSeason.endDate %}
+                                        {% set endDate = activeSeason.endDate %}
+                                    {% else %}
+                                        {% set endDate = activeSeason.startDate|date_modify("last day of this month")|date_modify("+1 month -1 day") %}
+                                    {% endif %}
                                     <div id="countdown-wrapper">
                                         <div class="d-flex justify-content-center countdown-timer">
                                             <div class="countdown-item mx-1">
@@ -102,8 +105,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% set standings = activeSeason.getSortedStandings() %}
-                                {% for player in standings|slice(0, 3) %}
+                                {% for player in seasonStandings|slice(0, 3) %}
                                     <tr>
                                         <td>{{ player.rank }}</td>
                                         <td>
@@ -217,9 +219,6 @@
                                         <tr>
                                             <td>{{ match.playedAt|date('d.m.Y H:i') }}</td>
                                             <td>
-                                                {% set player1 = player_service.getPlayerById(match.player1Id) %}
-                                                {% set player2 = player_service.getPlayerById(match.player2Id) %}
-                                                
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <div class="d-flex align-items-center">
                                                         <!-- Seitenindikator für Spieler 1 -->
@@ -229,14 +228,14 @@
                                                         </span>
                                                         
                                                         <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none text-light">
-                                                            {% if player1.avatar %}
-                                                                <img src="{{ player1.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player1.name }}">
-                                                            {% else %}
+                                                            {% if match.player1 and match.player1.avatar %}
+                                                                <img src="{{ match.player1.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ match.player1.name }}">
+                                                            {% elseif match.player1 %}
                                                                 <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
-                                                                    {{ player1.name|slice(0, 1)|upper }}
+                                                                    {{ match.player1.name|slice(0, 1)|upper }}
                                                                 </span>
                                                             {% endif %}
-                                                            {{ player1.displayName ?? 'Unbekannt' }}
+                                                            {{ match.player1 ? match.player1.displayName : 'Unbekannt' }}
                                                         </a>
                                                     </div>
                                                     
@@ -244,14 +243,14 @@
                                                     
                                                     <div class="d-flex align-items-center">
                                                         <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none text-light">
-                                                            {% if player2.avatar %}
-                                                                <img src="{{ player2.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ player2.name }}">
-                                                            {% else %}
+                                                            {% if match.player2 and match.player2.avatar %}
+                                                                <img src="{{ match.player2.avatar }}" class="rounded-circle me-1" width="24" height="24" alt="{{ match.player2.name }}">
+                                                            {% elseif match.player2 %}
                                                                 <span class="bg-secondary rounded-circle d-inline-flex justify-content-center align-items-center me-1" style="width: 24px; height: 24px; font-size: 0.8rem;">
-                                                                    {{ player2.name|slice(0, 1)|upper }}
+                                                                    {{ match.player2.name|slice(0, 1)|upper }}
                                                                 </span>
                                                             {% endif %}
-                                                            {{ player2.displayName ?? 'Unbekannt' }}
+                                                            {{ match.player2 ? match.player2.displayName : 'Unbekannt' }}
                                                         </a>
                                                         
                                                         <!-- Seitenindikator für Spieler 2 -->

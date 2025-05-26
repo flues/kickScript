@@ -51,16 +51,53 @@ class HomeController
         $recentMatches = [];
         $matchCount = 0;
         if ($this->matchService !== null) {
-            $recentMatches = $this->matchService->getRecentMatches(5);
+            $recentMatchesRaw = $this->matchService->getRecentMatches(5);
             $matchCount = count($this->matchService->getAllMatches());
+            
+            // Erweitere die Match-Daten um Spielerinformationen für das Template
+            foreach ($recentMatchesRaw as $match) {
+                $player1 = $this->playerService->getPlayerById($match->getPlayer1Id());
+                $player2 = $this->playerService->getPlayerById($match->getPlayer2Id());
+                
+                $recentMatches[] = [
+                    'id' => $match->getId(),
+                    'playedAt' => $match->getPlayedAt(),
+                    'player1Id' => $match->getPlayer1Id(),
+                    'player2Id' => $match->getPlayer2Id(),
+                    'player1' => $player1,
+                    'player2' => $player2,
+                    'scorePlayer1' => $match->getScorePlayer1(),
+                    'scorePlayer2' => $match->getScorePlayer2(),
+                    'player1Side' => $match->getPlayer1Side(),
+                    'player2Side' => $match->getPlayer2Side(),
+                    'player1IsWinner' => $match->isPlayer1Winner(),
+                    'player2IsWinner' => $match->isPlayer2Winner(),
+                    'eloChange' => $match->getEloChange(),
+                    'notes' => $match->getNotes()
+                ];
+            }
         }
         
-        // Hole die aktive Saison, falls der SeasonService verfügbar ist
+        // Hole die aktive Saison und deren Daten (Single Source of Truth)
         $activeSeason = null;
         $seasonCount = 0;
+        $seasonStandings = [];
+        $seasonStatistics = null;
+        
         if ($this->seasonService !== null) {
             $activeSeason = $this->seasonService->getActiveSeason();
             $seasonCount = count($this->seasonService->getAllSeasons());
+            
+            if ($activeSeason) {
+                // Berechne Saison-Daten zur Laufzeit
+                $seasonStandings = $this->seasonService->getSeasonStandings($activeSeason->getId());
+                $seasonStatistics = $this->seasonService->getSeasonStatistics($activeSeason->getId());
+                
+                // Erweitere Saison-Objekt um berechnete Eigenschaften für Template
+                $activeSeason = (object) array_merge((array) $activeSeason, [
+                    'durationInDays' => $activeSeason->getDurationInDays()
+                ]);
+            }
         }
         
         return $this->view->render($response, 'home.twig', [
@@ -70,7 +107,9 @@ class HomeController
             'recentMatches' => $recentMatches,
             'matchCount' => $matchCount,
             'activeSeason' => $activeSeason,
-            'seasonCount' => $seasonCount
+            'seasonCount' => $seasonCount,
+            'seasonStandings' => $seasonStandings,
+            'seasonStatistics' => $seasonStatistics
         ]);
     }
 

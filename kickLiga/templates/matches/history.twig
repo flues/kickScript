@@ -22,6 +22,7 @@
                                         <th>Ergebnis</th>
                                         <th>ELO-Änderung</th>
                                         <th>Details</th>
+                                        <th>Aktionen</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -33,9 +34,9 @@
                                                     <span class="player-side-badge side-{{ match.player1Side }}">
                                                         {{ match.player1Side == 'blau' ? '🔵' : '⚪' }}
                                                     </span>
-                                                    <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none">
-                                                        {{ player_service.getPlayerById(match.player1Id).displayName ?? 'Unbekannt' }}
-                                                    </a>
+                                                                                        <a href="{{ url_for('players.view', {'id': match.player1Id}) }}" class="text-decoration-none">
+                                        {{ players[match.player1Id].displayName ?? 'Unbekannt' }}
+                                    </a>
                                                 </div>
                                             </td>
                                             <td>
@@ -43,9 +44,9 @@
                                                     <span class="player-side-badge side-{{ match.player2Side }}">
                                                         {{ match.player2Side == 'blau' ? '🔵' : '⚪' }}
                                                     </span>
-                                                    <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none">
-                                                        {{ player_service.getPlayerById(match.player2Id).displayName ?? 'Unbekannt' }}
-                                                    </a>
+                                                                                        <a href="{{ url_for('players.view', {'id': match.player2Id}) }}" class="text-decoration-none">
+                                        {{ players[match.player2Id].displayName ?? 'Unbekannt' }}
+                                    </a>
                                                 </div>
                                             </td>
                                             <td>
@@ -85,6 +86,15 @@
                                                 {% else %}
                                                     <span class="text-muted">N/A</span>
                                                 {% endif %}
+                                            </td>
+                                            <td>
+                                                <form method="post" action="{{ url_for('matches.delete', {'id': match.id}) }}" 
+                                                      style="display: inline;" 
+                                                      onsubmit="return confirm('Sind Sie sicher, dass Sie dieses Spiel löschen möchten? Alle Statistiken werden automatisch neu berechnet.')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Spiel löschen">
+                                                        <i class="ph-trash"></i>
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     {% endfor %}

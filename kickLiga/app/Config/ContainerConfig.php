@@ -15,6 +15,7 @@ use App\Services\EloService;
 use App\Services\SeasonService;
 use App\Services\AchievementService;
 use App\Services\CoinflipService;
+use App\Services\ComputationService;
 use DI\Container;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
@@ -63,34 +64,44 @@ class ContainerConfig
                 );
             },
             
-            // PlayerService
-            PlayerService::class => function (Container $container) {
-                return new PlayerService(
-                    $container->get(DataService::class),
-                    $container->get(LoggerInterface::class)
-                );
-            },
-            
-            // EloService
+            // EloService (keine Abhängigkeiten außer Logger)
             EloService::class => function (Container $container) {
                 return new EloService($container->get(LoggerInterface::class));
             },
             
-            // MatchService
-            MatchService::class => function (Container $container) {
-                return new MatchService(
+            // ComputationService (benötigt nur DataService und EloService)
+            ComputationService::class => function (Container $container) {
+                return new ComputationService(
                     $container->get(DataService::class),
-                    $container->get(PlayerService::class),
                     $container->get(EloService::class),
                     $container->get(LoggerInterface::class)
                 );
             },
             
-            // SeasonService
+            // PlayerService (benötigt DataService und ComputationService)
+            PlayerService::class => function (Container $container) {
+                return new PlayerService(
+                    $container->get(DataService::class),
+                    $container->get(ComputationService::class),
+                    $container->get(LoggerInterface::class)
+                );
+            },
+            
+            // MatchService (benötigt DataService, EloService - NICHT PlayerService)
+            MatchService::class => function (Container $container) {
+                return new MatchService(
+                    $container->get(DataService::class),
+                    null, // PlayerService entfernt um zirkuläre Abhängigkeit zu vermeiden
+                    $container->get(EloService::class),
+                    $container->get(LoggerInterface::class)
+                );
+            },
+            
+            // SeasonService (benötigt DataService und ComputationService)
             SeasonService::class => function (Container $container) {
                 return new SeasonService(
                     $container->get(DataService::class),
-                    $container->get(PlayerService::class),
+                    $container->get(ComputationService::class),
                     $container->get(LoggerInterface::class)
                 );
             },
@@ -117,9 +128,8 @@ class ContainerConfig
                     'auto_reload' => true
                 ]);
 
-                // Services als globale Variablen für Twig verfügbar machen
-                $twig->getEnvironment()->addGlobal('player_service', $container->get(PlayerService::class));
-                $twig->getEnvironment()->addGlobal('season_service', $container->get(SeasonService::class));
+                // Services werden bei Bedarf in den Controllern injiziert
+                // um zirkuläre Abhängigkeiten zu vermeiden
 
                 return $twig;
             },

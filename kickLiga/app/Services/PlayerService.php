@@ -12,23 +12,30 @@ use RuntimeException;
 class PlayerService
 {
     private DataService $dataService;
+    private ComputationService $computationService;
     private ?LoggerInterface $logger;
-    private const PLAYERS_FILE = 'players';
+    private const PLAYERS_META_FILE = 'players_meta';
 
     /**
-     * PlayerService Konstruktor
+     * PlayerService Konstruktor - Refactored für Single Source of Truth
      *
      * @param DataService $dataService DataService-Instanz
+     * @param ComputationService $computationService ComputationService-Instanz
      * @param LoggerInterface|null $logger Logger-Instanz
      */
-    public function __construct(DataService $dataService, ?LoggerInterface $logger = null)
-    {
+    public function __construct(
+        DataService $dataService, 
+        ComputationService $computationService,
+        ?LoggerInterface $logger = null
+    ) {
         $this->dataService = $dataService;
+        $this->computationService = $computationService;
         $this->logger = $logger;
     }
 
     /**
-     * Speichert einen Spieler
+     * Speichert Spieler-Metadaten (Name, Avatar, etc.)
+     * Statistiken und ELO werden aus matches.json berechnet
      *
      * @param Player $player Spieler-Objekt
      * @return bool True bei Erfolg
@@ -36,7 +43,7 @@ class PlayerService
      */
     public function savePlayer(Player $player): bool
     {
-        $players = $this->getAllPlayersArray();
+        $playersMeta = $this->getAllPlayersMetaArray();
         
         // Spieler-ID extrahieren
         $playerId = $player->getId();
@@ -44,79 +51,90 @@ class PlayerService
             throw new RuntimeException('Spieler hat keine ID');
         }
         
-        // Spieler speichern/aktualisieren
-        $players[$playerId] = $player->jsonSerialize();
+        // Nur Metadaten speichern
+        $playersMeta[$playerId] = [
+            'id' => $playerId,
+            'name' => $player->getName(),
+            'nickname' => $player->getNickname(),
+            'avatar' => $player->getAvatar(),
+            'createdAt' => $player->getCreatedAt()
+        ];
         
-        $success = $this->dataService->write(self::PLAYERS_FILE, $players);
+        $success = $this->dataService->write(self::PLAYERS_META_FILE, $playersMeta);
         
         if ($success && $this->logger) {
-            $this->logger->info("Spieler {$player->getName()} (ID: {$playerId}) gespeichert");
+            $this->logger->info("Spieler-Metadaten {$player->getName()} (ID: {$playerId}) gespeichert");
         }
         
         return $success;
     }
 
     /**
-     * Holt einen Spieler anhand der ID
+     * Holt einen Spieler anhand der ID - berechnet aus matches.json
      *
      * @param string $playerId Die Spieler-ID
      * @return Player|null Das Spielerobjekt oder null, wenn nicht gefunden
      */
     public function getPlayerById(string $playerId): ?Player
     {
-        $players = $this->getAllPlayersArray();
+        $playerData = $this->computationService->computePlayerData($playerId);
         
-        if (!isset($players[$playerId])) {
+        if (empty($playerData) || !isset($playerData['id'])) {
             if ($this->logger) {
                 $this->logger->info("Spieler mit ID {$playerId} nicht gefunden");
             }
             return null;
         }
         
-        return Player::fromArray($players[$playerId]);
+        return Player::fromArray($playerData);
     }
 
     /**
-     * Gibt alle Spieler zurück
+     * Gibt alle Spieler zurück - berechnet aus matches.json
      *
      * @return Player[] Array mit allen Spielern
      */
     public function getAllPlayers(): array
     {
-        $playersData = $this->getAllPlayersArray();
-        $players = [];
+        $playersDataArrays = $this->computationService->computeAllPlayerData(); // Dies sollte bereits keyed by ID sein
+        $playersMap = [];
         
-        foreach ($playersData as $playerData) {
-            $players[] = Player::fromArray($playerData);
+        foreach ($playersDataArrays as $playerId => $playerDataArray) {
+            if (is_array($playerDataArray) && isset($playerDataArray['id'])) {
+                $playersMap[$playerId] = Player::fromArray($playerDataArray);
+            } elseif ($this->logger) {
+                $this->logger->warning("Ungültige Spielerdaten für ID {$playerId} von ComputationService erhalten.");
+            }
         }
         
-        return $players;
+        return $playersMap;
     }
 
     /**
-     * Löscht einen Spieler
+     * Löscht Spieler-Metadaten
+     * WARNUNG: Matches des Spielers bleiben bestehen!
      *
      * @param string $playerId Die Spieler-ID
      * @return bool True bei Erfolg, False wenn Spieler nicht gefunden
      */
     public function deletePlayer(string $playerId): bool
     {
-        $players = $this->getAllPlayersArray();
+        $playersMeta = $this->getAllPlayersMetaArray();
         
-        if (!isset($players[$playerId])) {
+        if (!isset($playersMeta[$playerId])) {
             if ($this->logger) {
                 $this->logger->info("Zu löschender Spieler mit ID {$playerId} nicht gefunden");
             }
             return false;
         }
         
-        $playerName = $players[$playerId]['name'];
-        unset($players[$playerId]);
+        $playerName = $playersMeta[$playerId]['name'];
+        unset($playersMeta[$playerId]);
         
-        $success = $this->dataService->write(self::PLAYERS_FILE, $players);
+        $success = $this->dataService->write(self::PLAYERS_META_FILE, $playersMeta);
         
         if ($success && $this->logger) {
-            $this->logger->info("Spieler {$playerName} (ID: {$playerId}) gelöscht");
+            $this->logger->info("Spieler-Metadaten {$playerName} (ID: {$playerId}) gelöscht");
         }
         
         return $success;
@@ -177,6 +195,19 @@ class PlayerService
         $players = $this->sortPlayersByElo($players);
         
         return array_slice($players, 0, $limit);
+    }
+
+    /**
+     * Invalidiert den Cache im ComputationService
+     * Wird nach Änderungen an Matches aufgerufen (Single Source of Truth)
+     */
+    public function invalidateCache(): void
+    {
+        $this->computationService->invalidateCache();
+        
+        if ($this->logger) {
+            $this->logger->info('PlayerService: Cache invalidiert nach Match-Änderung');
+        }
     }
 
     /**
@@ -378,12 +409,12 @@ class PlayerService
     }
 
     /**
-     * Holt alle Spieler als assoziatives Array (Hilfsmethode)
+     * Holt alle Spieler-Metadaten als assoziatives Array (Hilfsmethode)
      *
-     * @return array Spielerdaten
+     * @return array Spieler-Metadaten
      */
-    private function getAllPlayersArray(): array
+    private function getAllPlayersMetaArray(): array
     {
-        return $this->dataService->read(self::PLAYERS_FILE) ?: [];
+        return $this->dataService->read(self::PLAYERS_META_FILE) ?: [];
     }
 } 

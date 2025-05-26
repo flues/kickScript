@@ -10,10 +10,16 @@ use App\Models\Player;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
+/**
+ * SeasonService - Single Source of Truth
+ * 
+ * Verwaltet nur Saison-Metadaten (Name, Zeitraum, Status).
+ * Alle Statistiken und Tabellen werden zur Laufzeit aus matches.json berechnet.
+ */
 class SeasonService
 {
     private DataService $dataService;
-    private PlayerService $playerService;
+    private ComputationService $computationService;
     private ?LoggerInterface $logger;
     private const SEASONS_FILE = 'seasons';
 
@@ -21,21 +27,34 @@ class SeasonService
      * SeasonService Konstruktor
      *
      * @param DataService $dataService DataService-Instanz
-     * @param PlayerService $playerService PlayerService-Instanz
+     * @param ComputationService $computationService ComputationService-Instanz
      * @param LoggerInterface|null $logger Logger-Instanz
      */
     public function __construct(
         DataService $dataService,
-        PlayerService $playerService,
+        ComputationService $computationService,
         ?LoggerInterface $logger = null
     ) {
         $this->dataService = $dataService;
-        $this->playerService = $playerService;
+        $this->computationService = $computationService;
         $this->logger = $logger;
     }
 
     /**
-     * Speichert eine Saison
+     * Invalidiert den Cache für alle abhängigen Services
+     * Wird nach Änderungen an Matches aufgerufen
+     */
+    public function invalidateCache(): void
+    {
+        $this->computationService->invalidateCache();
+        
+        if ($this->logger) {
+            $this->logger->info('SeasonService: Cache invalidiert nach Match-Änderung');
+        }
+    }
+
+    /**
+     * Speichert eine Saison (nur Metadaten)
      *
      * @param Season $season Saison-Objekt
      * @return bool True bei Erfolg
@@ -51,7 +70,7 @@ class SeasonService
             throw new RuntimeException('Saison hat keine ID');
         }
         
-        // Saison speichern/aktualisieren
+        // Saison speichern/aktualisieren (nur Metadaten)
         $seasons[$seasonId] = $season->jsonSerialize();
         
         $success = $this->dataService->write(self::SEASONS_FILE, $seasons);
@@ -130,7 +149,7 @@ class SeasonService
     }
 
     /**
-     * Erstellt eine neue Saison mit initialisierter Tabelle
+     * Erstellt eine neue Saison
      *
      * @param string $name Name der Saison
      * @param \DateTimeImmutable|null $startDate Startdatum der Saison
@@ -147,11 +166,6 @@ class SeasonService
         }
         
         $season = new Season($name, $startDate);
-        
-        // Initialisiere die Tabelle mit allen aktiven Spielern
-        $allPlayers = $this->playerService->getAllPlayers();
-        $season->initializeStandings($allPlayers);
-        
         $this->saveSeason($season);
         
         if ($this->logger) {
@@ -162,89 +176,38 @@ class SeasonService
     }
 
     /**
-     * Aktualisiert die Saison mit einem neuen Match
-     *
-     * @param GameMatch $match Das zu berücksichtigende Match
-     * @param string|null $seasonId Die ID der Saison, oder null für die aktive Saison
-     * @return bool True bei Erfolg
-     */
-    public function updateSeasonWithMatch(GameMatch $match, ?string $seasonId = null): bool
-    {
-        // Wenn keine Saison-ID angegeben wurde, verwende die aktive Saison
-        if ($seasonId === null) {
-            $activeSeason = $this->getActiveSeason();
-            if (!$activeSeason) {
-                if ($this->logger) {
-                    $this->logger->warning("Keine aktive Saison gefunden für Match {$match->getId()}");
-                }
-                return false;
-            }
-            $seasonId = $activeSeason->getId();
-        }
-        
-        $season = $this->getSeasonById($seasonId);
-        if (!$season) {
-            if ($this->logger) {
-                $this->logger->warning("Saison mit ID {$seasonId} nicht gefunden für Match {$match->getId()}");
-            }
-            return false;
-        }
-        
-        // Prüfe, ob das Match innerhalb des Saisonzeitraums liegt
-        $matchDate = $match->getPlayedAt();
-        $seasonStart = $season->getStartDate();
-        $seasonEnd = $season->getEndDate() ?? new \DateTimeImmutable('last day of this month 23:59:59');
-        
-        // Match nur hinzufügen, wenn es im Saisonzeitraum liegt
-        if ($matchDate >= $seasonStart && $matchDate <= $seasonEnd) {
-            // Aktualisiere die Tabelle mit dem Match
-            $season->updateStandings($match);
-            return $this->saveSeason($season);
-        } else {
-            if ($this->logger) {
-                $this->logger->info("Match {$match->getId()} liegt nicht im Zeitraum der Saison {$season->getId()}");
-            }
-            return false;
-        }
-    }
-
-    /**
      * Gibt die aktive Saison zurück
      *
-     * @return Season|null Die aktive Saison oder null, wenn keine aktiv ist
+     * @return Season|null Die aktive Saison oder null
      */
     public function getActiveSeason(): ?Season
     {
         $seasons = $this->getAllSeasons();
         
-        // Filtere aktive Saisons
-        $activeSeasons = array_values(array_filter($seasons, function (Season $season) {
-            return $season->isActive();
-        }));
-        
-        // Wenn keine aktive Saison vorhanden ist, gib null zurück
-        if (empty($activeSeasons)) {
-            return null;
+        foreach ($seasons as $season) {
+            if ($season->isActive()) {
+                return $season;
+            }
         }
         
-        // Wenn mehrere aktive Saisons vorhanden sind, nimm die neueste
-        usort($activeSeasons, function (Season $a, Season $b) {
-            return $b->getStartDate()->getTimestamp() - $a->getStartDate()->getTimestamp();
-        });
+        if ($this->logger) {
+            $this->logger->info('Keine aktive Saison gefunden');
+        }
         
-        return $activeSeasons[0];
+        return null;
     }
 
     /**
      * Beendet eine Saison
      *
      * @param string $seasonId Die Saison-ID
-     * @param \DateTimeImmutable|null $endDate Enddatum der Saison
+     * @param \DateTimeImmutable|null $endDate Das Enddatum
      * @return bool True bei Erfolg
      */
     public function endSeason(string $seasonId, ?\DateTimeImmutable $endDate = null): bool
     {
         $season = $this->getSeasonById($seasonId);
+        
         if (!$season) {
             if ($this->logger) {
                 $this->logger->warning("Zu beendende Saison mit ID {$seasonId} nicht gefunden");
@@ -252,109 +215,93 @@ class SeasonService
             return false;
         }
         
-        // Wenn kein Enddatum angegeben, verwende den letzten Tag des Monats
-        if ($endDate === null) {
-            // Verwende den letzten Tag des Monats des Startdatums
-            $startDate = $season->getStartDate();
-            $endDate = new \DateTimeImmutable($startDate->format('Y-m-t 23:59:59'));
-        } else {
-            // Wenn Enddatum angegeben, setze es auf den letzten Tag des angegebenen Monats
-            $endDate = new \DateTimeImmutable($endDate->format('Y-m-t 23:59:59'));
-        }
-        
-        // Speichere den finalen ELO-Wert jedes Spielers in den Season-Standings
-        $allPlayers = $this->playerService->getAllPlayers();
-        $standings = $season->getStandings();
-        
-        foreach ($allPlayers as $player) {
-            $playerId = $player->getId();
-            if (isset($standings[$playerId])) {
-                // Speichere den aktuellen ELO-Wert als Abschluss-ELO in den Season-Standings
-                $standings[$playerId]['finalElo'] = $player->getEloRating();
-                
-                if ($this->logger) {
-                    $this->logger->info("Abschluss-ELO von Spieler {$playerId} ({$player->getDisplayName()}) gespeichert: {$player->getEloRating()}");
-                }
-            }
-        }
-        
-        // Aktualisiere die Standings in der Season
-        $season->setStandings($standings);
-        
-        // Beende die Saison
         $season->endSeason($endDate);
+        $success = $this->saveSeason($season);
         
-        // Alle Spieler-ELO zurücksetzen
-        $defaultElo = 1000; // Standardwert für ELO-Rating
-        
-        foreach ($allPlayers as $player) {
-            $player->setEloRating($defaultElo);
-            $this->playerService->savePlayer($player);
-            
-            if ($this->logger) {
-                $this->logger->info("ELO-Rating von Spieler {$player->getId()} ({$player->getDisplayName()}) zurückgesetzt auf {$defaultElo}");
-            }
+        if ($success && $this->logger) {
+            $this->logger->info("Saison {$season->getName()} beendet");
         }
         
-        if ($this->logger) {
-            $this->logger->info("Saison {$seasonId} beendet und ELO-Ratings zurückgesetzt");
-        }
-        
-        return $this->saveSeason($season);
+        return $success;
     }
 
+    // === COMPUTED PROPERTIES (Single Source of Truth) ===
+
     /**
-     * Initialisiert die Tabelle einer bestehenden Saison mit allen Matches im Saisonzeitraum
+     * Berechnet die Tabelle für eine Saison zur Laufzeit
      *
      * @param string $seasonId Die Saison-ID
-     * @param array $matches Liste aller Matches
-     * @return bool True bei Erfolg
+     * @return array Die sortierte Tabelle
      */
-    public function rebuildSeasonStandings(string $seasonId, array $matches): bool
+    public function getSeasonStandings(string $seasonId): array
     {
         $season = $this->getSeasonById($seasonId);
         if (!$season) {
-            if ($this->logger) {
-                $this->logger->warning("Saison mit ID {$seasonId} nicht gefunden für Neuberechnung");
-            }
-            return false;
+            return [];
         }
+
+        // Alle Matches der Saison holen
+        $seasonMatches = $this->getSeasonMatches($season);
         
-        // Initialisiere die Tabelle neu mit allen Spielern
-        $allPlayers = $this->playerService->getAllPlayers();
-        $season->initializeStandings($allPlayers);
-        
-        // Saisonzeitraum bestimmen
-        $seasonStart = $season->getStartDate();
-        $seasonEnd = $season->getEndDate() ?? new \DateTimeImmutable('last day of this month 23:59:59');
-        
-        // Füge nur Matches hinzu, die im Saisonzeitraum liegen
-        foreach ($matches as $match) {
-            if ($match instanceof GameMatch) {
-                $matchDate = $match->getPlayedAt();
-                if ($matchDate >= $seasonStart && $matchDate <= $seasonEnd) {
-                    $season->updateStandings($match);
-                }
-            }
-        }
-        
-        return $this->saveSeason($season);
+        // Tabelle aus Matches berechnen
+        return $this->computationService->calculateStandings($seasonMatches);
     }
 
     /**
-     * Gibt alle Saisondaten als Array zurück
+     * Berechnet die Statistiken für eine Saison zur Laufzeit
      *
-     * @return array Assoziatives Array mit allen Saisondaten
+     * @param string $seasonId Die Saison-ID
+     * @return array Die Saisonstatistiken
+     */
+    public function getSeasonStatistics(string $seasonId): array
+    {
+        $season = $this->getSeasonById($seasonId);
+        if (!$season) {
+            return [
+                'totalMatches' => 0,
+                'totalGoals' => 0,
+                'highestScore' => null,
+                'longestWinStreak' => null
+            ];
+        }
+
+        // Alle Matches der Saison holen
+        $seasonMatches = $this->getSeasonMatches($season);
+        
+        // Statistiken aus Matches berechnen
+        return $this->computationService->calculateSeasonStatistics($seasonMatches);
+    }
+
+    /**
+     * Holt alle Matches einer Saison
+     *
+     * @param Season $season Die Saison
+     * @return GameMatch[] Array mit Matches der Saison
+     */
+    public function getSeasonMatches(Season $season): array
+    {
+        $allMatches = $this->dataService->read('matches') ?? [];
+        $seasonMatches = [];
+
+        foreach ($allMatches as $matchData) {
+            $match = GameMatch::fromArray($matchData);
+            
+            // Prüfe, ob Match in Saisonzeitraum fällt
+            if ($season->isMatchInSeason($match->getPlayedAt())) {
+                $seasonMatches[] = $match;
+            }
+        }
+
+        return $seasonMatches;
+    }
+
+    /**
+     * Holt alle Saisons als Array
+     *
+     * @return array Array mit Saisondaten
      */
     private function getAllSeasonsArray(): array
     {
-        try {
-            return $this->dataService->read(self::SEASONS_FILE);
-        } catch (\Exception $e) {
-            if ($this->logger) {
-                $this->logger->error("Fehler beim Lesen der Saisondaten: " . $e->getMessage());
-            }
-            return [];
-        }
+        return $this->dataService->read(self::SEASONS_FILE) ?? [];
     }
 } 

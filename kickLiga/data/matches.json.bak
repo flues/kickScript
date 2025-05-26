@@ -133,35 +133,5 @@
         "notes": "unerwartet unknapp",
         "player1Side": "weiss",
         "player2Side": "blau"
-    },
-    "match_6834668bcb9a3": {
-        "id": "match_6834668bcb9a3",
-        "player1Id": "player_682488d836b86",
-        "player2Id": "player_682493ca1a3c7",
-        "scorePlayer1": 7,
-        "scorePlayer2": 3,
-        "playedAt": 1748264520,
-        "eloChange": {
-            "player1": 17,
-            "player2": -17
-        },
-        "notes": "Cool",
-        "player1Side": "weiss",
-        "player2Side": "blau",
-        "coinflipData": {
-            "coinflipResult": "kopf",
-            "sideAssignment": {
-                "player1Side": "weiss",
-                "player2Side": "blau",
-                "winner": 2,
-                "coinResult": "kopf",
-                "player1Choice": "zahl"
-            },
-            "timestamp": {
-                "date": "2025-05-26 15:02:24.846830",
-                "timezone_type": 3,
-                "timezone": "Europe\/Berlin"
-            }
-        }
     }
 }

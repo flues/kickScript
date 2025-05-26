@@ -52,9 +52,24 @@ class MatchController
             return $b->getPlayedAt()->getTimestamp() - $a->getPlayedAt()->getTimestamp();
         });
 
+        // Spielerdaten für Template sammeln
+        $players = [];
+        foreach ($matches as $match) {
+            $player1Id = $match->getPlayer1Id();
+            $player2Id = $match->getPlayer2Id();
+            
+            if (!isset($players[$player1Id])) {
+                $players[$player1Id] = $this->playerService->getPlayerById($player1Id);
+            }
+            if (!isset($players[$player2Id])) {
+                $players[$player2Id] = $this->playerService->getPlayerById($player2Id);
+            }
+        }
+
         return $this->view->render($response, 'matches/history.twig', [
             'title' => 'Spielhistorie',
-            'matches' => $matches
+            'matches' => $matches,
+            'players' => $players
         ]);
     }
 
@@ -433,5 +448,53 @@ class MatchController
             ]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
         }
+    }
+
+    /**
+     * Löscht ein Match und berechnet alle abhängigen Daten neu (Single Source of Truth)
+     */
+    public function deleteMatch(Request $request, Response $response): Response
+    {
+        $matchId = $request->getAttribute('id');
+        
+        if (empty($matchId)) {
+            // Redirect mit Fehlermeldung
+            $routeContext = RouteContext::fromRequest($request);
+            $routeParser = $routeContext->getRouteParser();
+            $url = $routeParser->urlFor('matches.history');
+            return $response->withHeader('Location', $url)->withStatus(302);
+        }
+
+        try {
+            // Match löschen - alle anderen Daten werden automatisch neu berechnet
+            $success = $this->matchService->deleteMatch($matchId);
+            
+            if (!$success) {
+                throw new \RuntimeException('Match konnte nicht gelöscht werden');
+            }
+            
+            // WICHTIG: Cache invalidieren, damit alle Services die neuen Daten verwenden
+            // Dies ist notwendig für das Single Source of Truth Konzept
+            $this->playerService->invalidateCache();
+            
+            // Auch SeasonService Cache invalidieren und Statistiken neu berechnen, falls verfügbar
+            if ($this->seasonService !== null) {
+                $this->seasonService->invalidateCache();
+                
+                // Alle Saisonstatistiken neu berechnen mit den aktuellen Matches
+                $allMatches = $this->matchService->getAllMatches();
+                $this->seasonService->rebuildAllSeasonStatistics($allMatches);
+            }
+            
+        } catch (\Exception $e) {
+            // TODO: Flash message für Fehler
+            error_log("Fehler beim Löschen des Matches {$matchId}: " . $e->getMessage());
+        }
+        
+        // Zurück zur Match-Historie
+        $routeContext = RouteContext::fromRequest($request);
+        $routeParser = $routeContext->getRouteParser();
+        $url = $routeParser->urlFor('matches.history');
+        return $response->withHeader('Location', $url)->withStatus(302);
     }
 } 
