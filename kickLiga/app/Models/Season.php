@@ -103,6 +103,19 @@ class Season implements JsonSerializable
         return $this->endDate;
     }
 
+    /**
+     * Gibt das effektive Enddatum zurück (explizit gesetzt oder berechnet)
+     */
+    public function getEffectiveEndDate(): \DateTimeImmutable
+    {
+        if ($this->endDate !== null) {
+            return $this->endDate;
+        }
+        
+        // Verwende den letzten Tag des Startmonats
+        return new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
+    }
+
     public function isActive(): bool
     {
         return $this->isActive;
@@ -119,7 +132,13 @@ class Season implements JsonSerializable
      */
     public function getDurationInDays(): int
     {
-        $endDate = $this->endDate ?? new \DateTimeImmutable();
+        // Wenn kein explizites Enddatum gesetzt ist, verwende den letzten Tag des Startmonats
+        if ($this->endDate === null) {
+            $endDate = new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
+        } else {
+            $endDate = $this->endDate;
+        }
+        
         return $this->startDate->diff($endDate)->days;
     }
 
@@ -128,7 +147,13 @@ class Season implements JsonSerializable
      */
     public function isMatchInSeason(\DateTimeImmutable $matchDate): bool
     {
-        $seasonEnd = $this->endDate ?? new \DateTimeImmutable('last day of this month 23:59:59');
+        // Wenn kein explizites Enddatum gesetzt ist, verwende den letzten Tag des Startmonats
+        if ($this->endDate === null) {
+            $seasonEnd = new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
+        } else {
+            $seasonEnd = $this->endDate;
+        }
+        
         return $matchDate >= $this->startDate && $matchDate <= $seasonEnd;
     }
 

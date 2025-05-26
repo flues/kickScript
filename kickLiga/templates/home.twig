@@ -63,7 +63,7 @@
                                     {% if activeSeason.endDate %}
                                         {% set endDate = activeSeason.endDate %}
                                     {% else %}
-                                        {% set endDate = activeSeason.startDate|date_modify("last day of this month")|date_modify("+1 month -1 day") %}
+                                        {% set endDate = activeSeason.effectiveEndDate %}
                                     {% endif %}
                                     <div id="countdown-wrapper">
                                         <div class="d-flex justify-content-center countdown-timer">

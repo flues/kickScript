@@ -45,7 +45,7 @@
                                         {% if season.endDate %}
                                             {{ season.endDate|date('d.m.Y') }}
                                         {% else %}
-                                            {{ season.startDate|date('t.m.Y') }} <small class="text-muted">(voraussichtlich)</small>
+                                            {{ season.effectiveEndDate|date('d.m.Y') }} <small class="text-muted">(voraussichtlich)</small>
                                         {% endif %}
                                     </td>
                                     <td>{{ season.statistics.totalMatches }}</td>

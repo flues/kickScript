@@ -47,11 +47,22 @@ class SeasonController
             return $b->getStartDate()->getTimestamp() - $a->getStartDate()->getTimestamp();
         });
 
+        // Erweitere Saisons um berechnete Eigenschaften für Template
+        $enrichedSeasons = [];
+        foreach ($seasons as $season) {
+            $seasonStatistics = $this->seasonService->getSeasonStatistics($season->getId());
+            
+            $enrichedSeasons[] = (object) array_merge((array) $season, [
+                'effectiveEndDate' => $season->getEffectiveEndDate(),
+                'statistics' => $seasonStatistics
+            ]);
+        }
+
         $activeSeason = $this->seasonService->getActiveSeason();
 
         return $this->view->render($response, 'seasons/list.twig', [
             'title' => 'Saisons',
-            'seasons' => $seasons,
+            'seasons' => $enrichedSeasons,
             'activeSeason' => $activeSeason,
             'seasonCount' => count($seasons)
         ]);

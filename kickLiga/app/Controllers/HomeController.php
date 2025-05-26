@@ -95,7 +95,8 @@ class HomeController
                 
                 // Erweitere Saison-Objekt um berechnete Eigenschaften für Template
                 $activeSeason = (object) array_merge((array) $activeSeason, [
-                    'durationInDays' => $activeSeason->getDurationInDays()
+                    'durationInDays' => $activeSeason->getDurationInDays(),
+                    'effectiveEndDate' => $activeSeason->getEffectiveEndDate()
                 ]);
             }
         }
