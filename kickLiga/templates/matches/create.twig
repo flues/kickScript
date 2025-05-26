@@ -22,7 +22,7 @@
                                 <select class="form-select" id="player1Id" name="player1Id" required>
                                     <option value="">Bitte wählen...</option>
                                     {% for player in players %}
-                                        <option value="{{ player.id }}" {{ (formData.player1Id == player.id) ? 'selected' : '' }}>
+                                        <option value="{{ player.id }}" {{ (formData.player1Id == player.id or app.request.getQueryParams.player1Id == player.id) ? 'selected' : '' }}>
                                             {{ player.displayName }}
                                         </option>
                                     {% endfor %}
@@ -33,7 +33,7 @@
                                 <select class="form-select" id="player2Id" name="player2Id" required>
                                     <option value="">Bitte wählen...</option>
                                     {% for player in players %}
-                                        <option value="{{ player.id }}" {{ (formData.player2Id == player.id) ? 'selected' : '' }}>
+                                        <option value="{{ player.id }}" {{ (formData.player2Id == player.id or app.request.getQueryParams.player2Id == player.id) ? 'selected' : '' }}>
                                             {{ player.displayName }}
                                         </option>
                                     {% endfor %}
@@ -46,16 +46,111 @@
                             <h5 class="mb-3">
                                 <i class="ph-arrows-split"></i> Seitenwahl
                             </h5>
+                            
+                            <!-- Münzwurf-Bereich -->
+                            <div class="coinflip-section mb-3">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="ph-coin"></i> Faire Seitenwahl per Münzwurf
+                                        </h6>
+                                        <p class="card-text text-muted small">
+                                            Lassen Sie <span id="coinflipPlayer1Name">Spieler 1</span> zwischen Kopf oder Zahl wählen. 
+                                            Der Gewinner bekommt die blaue Seite.
+                                        </p>
+                                        
+                                        <div class="coinflip-controls">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-6">
+                                                    <label class="form-label small">
+                                                        <span id="coinflipPlayer1NameChoice">Spieler 1</span> wählt:
+                                                    </label>
+                                                    <div class="btn-group w-100" role="group">
+                                                        <input type="radio" class="btn-check" name="coinChoice" id="choice_kopf" value="kopf" autocomplete="off">
+                                                        <label class="btn btn-outline-warning" for="choice_kopf">
+                                                            <i class="ph-circle"></i> Kopf
+                                                        </label>
+                                                        
+                                                        <input type="radio" class="btn-check" name="coinChoice" id="choice_zahl" value="zahl" autocomplete="off">
+                                                        <label class="btn btn-outline-secondary" for="choice_zahl">
+                                                            <i class="ph-hash"></i> Zahl
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 text-center">
+                                                    <button type="button" class="btn btn-primary" id="performCoinflip" disabled>
+                                                        <i class="ph-coin"></i> Münze werfen!
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Münzwurf-Ergebnis -->
+                                        <div id="coinflipResult" class="mt-3" style="display: none;">
+                                            <div class="alert alert-success">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="coin-animation me-3">
+                                                        <div class="coin-visual" id="coinVisual">
+                                                            <i class="ph-coin"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <strong>Münzwurf-Ergebnis:</strong><br>
+                                                        <span id="coinflipDescription"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Seitenwahl für Gewinner -->
+                                        <div id="winnerSideChoice" class="mt-3" style="display: none;">
+                                            <div class="card border-success">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-success">
+                                                        <i class="ph-crown"></i> <span id="winnerName">Gewinner</span>, wählen Sie Ihre Seite!
+                                                    </h6>
+                                                    <p class="card-text text-muted small">
+                                                        Als Münzwurf-Gewinner dürfen Sie sich Ihre bevorzugte Tischseite aussuchen.
+                                                    </p>
+                                                    
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-6">
+                                                            <div class="btn-group w-100" role="group">
+                                                                <input type="radio" class="btn-check" name="winnerSide" id="winner_blau" value="blau" autocomplete="off">
+                                                                <label class="btn btn-outline-primary" for="winner_blau">
+                                                                    🔵 Blaue Seite
+                                                                </label>
+                                                                
+                                                                <input type="radio" class="btn-check" name="winnerSide" id="winner_weiss" value="weiss" autocomplete="off">
+                                                                <label class="btn btn-outline-secondary" for="winner_weiss">
+                                                                    ⚪ Weiße Seite
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6 text-center">
+                                                            <button type="button" class="btn btn-success" id="confirmSideChoice" disabled>
+                                                                <i class="ph-check-circle"></i> Seite bestätigen
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Manuelle Seitenwahl -->
                             <div class="row">
                                 <div class="col-md-6">
                                     <label for="player1Side" class="form-label">
                                         <span id="player1Name">Spieler 1</span> spielt auf:
                                     </label>
                                     <select class="form-select" id="player1Side" name="player1Side" required>
-                                        <option value="blau" {{ (formData.player1Side == 'blau' or not formData.player1Side) ? 'selected' : '' }}>
+                                        <option value="blau" {{ (formData.player1Side == 'blau' or not formData.player1Side or app.request.getQueryParams.player1Side == 'blau') ? 'selected' : '' }}>
                                             🔵 Blaue Seite
                                         </option>
-                                        <option value="weiss" {{ (formData.player1Side == 'weiss') ? 'selected' : '' }}>
+                                        <option value="weiss" {{ (formData.player1Side == 'weiss' or app.request.getQueryParams.player1Side == 'weiss') ? 'selected' : '' }}>
                                             ⚪ Weiße Seite
                                         </option>
                                     </select>
@@ -65,10 +160,10 @@
                                         <span id="player2Name">Spieler 2</span> spielt auf:
                                     </label>
                                     <select class="form-select" id="player2Side" name="player2Side" required>
-                                        <option value="weiss" {{ (formData.player2Side == 'weiss' or not formData.player2Side) ? 'selected' : '' }}>
+                                        <option value="weiss" {{ (formData.player2Side == 'weiss' or not formData.player2Side or app.request.getQueryParams.player2Side == 'weiss') ? 'selected' : '' }}>
                                             ⚪ Weiße Seite
                                         </option>
-                                        <option value="blau" {{ (formData.player2Side == 'blau') ? 'selected' : '' }}>
+                                        <option value="blau" {{ (formData.player2Side == 'blau' or app.request.getQueryParams.player2Side == 'blau') ? 'selected' : '' }}>
                                             🔵 Blaue Seite
                                         </option>
                                     </select>
@@ -109,6 +204,17 @@
                             <textarea class="form-control" id="notes" name="notes" rows="3">{{ formData.notes }}</textarea>
                         </div>
 
+                        <!-- Versteckte Felder für Coinflip-Daten -->
+                        <input type="hidden" id="coinflipData" name="coinflipData" value="">
+                        {% if app.request.getQueryParams.coinflipData %}
+                            <input type="hidden" name="coinflipData" value="{{ app.request.getQueryParams.coinflipData }}">
+                            <div class="alert alert-info mb-3">
+                                <i class="ph-coin"></i> 
+                                <strong>Seitenwahl durch Münzwurf bestimmt</strong><br>
+                                Die Seitenzuweisung wurde durch einen fairen Münzwurf ermittelt.
+                            </div>
+                        {% endif %}
+
                         <div class="d-flex justify-content-end">
                             <a href="{{ url_for('matches.history') }}" class="btn btn-secondary me-2">Abbrechen</a>
                             <button type="submit" class="btn btn-success">
@@ -122,6 +228,44 @@
     </div>
 {% endblock %}
 
+{% block styles %}
+<style>
+.coinflip-section .card {
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.coin-visual {
+    font-size: 2rem;
+    color: var(--bs-primary);
+    animation: coinSpin 1s ease-in-out;
+}
+
+.coin-visual.heads {
+    color: #ffd700;
+}
+
+.coin-visual.tails {
+    color: #c0c0c0;
+}
+
+@keyframes coinSpin {
+    0% { transform: rotateY(0deg); }
+    50% { transform: rotateY(900deg); }
+    100% { transform: rotateY(1800deg); }
+}
+
+.btn-group .btn {
+    transition: all 0.3s ease;
+}
+
+.coinflip-controls {
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}
+
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -129,33 +273,92 @@ document.addEventListener('DOMContentLoaded', function() {
     const player2Select = document.getElementById('player2Id');
     const player1Side = document.getElementById('player1Side');
     const player2Side = document.getElementById('player2Side');
+    const performCoinflipBtn = document.getElementById('performCoinflip');
+    const coinChoiceInputs = document.querySelectorAll('input[name="coinChoice"]');
+    const coinflipResult = document.getElementById('coinflipResult');
+    const coinflipDescription = document.getElementById('coinflipDescription');
+    const coinVisual = document.getElementById('coinVisual');
+    const coinflipDataInput = document.getElementById('coinflipData');
+    const winnerSideChoice = document.getElementById('winnerSideChoice');
+    const winnerName = document.getElementById('winnerName');
+    const confirmSideChoiceBtn = document.getElementById('confirmSideChoice');
+    const winnerSideInputs = document.querySelectorAll('input[name="winnerSide"]');
+    
+    // Null-Checks für kritische Elemente
+    if (!player1Select || !player2Select || !performCoinflipBtn) {
+        console.error('Kritische DOM-Elemente nicht gefunden');
+        return;
+    }
+    
+    // Temporäre Speicherung der Münzwurf-Daten
+    let currentCoinflipData = null;
     
     // Dynamische Spielernamen-Updates
     function updatePlayerNames() {
+        if (!player1Select || !player2Select) return;
+        
         const player1Name = player1Select.options[player1Select.selectedIndex].text;
         const player2Name = player2Select.options[player2Select.selectedIndex].text;
         
         if (player1Select.value) {
-            document.getElementById('player1Name').textContent = player1Name;
-            document.getElementById('player1ScoreLabel').textContent = player1Name;
+            const player1NameEl = document.getElementById('player1Name');
+            const player1ScoreLabelEl = document.getElementById('player1ScoreLabel');
+            const coinflipPlayer1NameEl = document.getElementById('coinflipPlayer1Name');
+            const coinflipPlayer1NameChoiceEl = document.getElementById('coinflipPlayer1NameChoice');
+            
+            if (player1NameEl) player1NameEl.textContent = player1Name;
+            if (player1ScoreLabelEl) player1ScoreLabelEl.textContent = player1Name;
+            if (coinflipPlayer1NameEl) coinflipPlayer1NameEl.textContent = player1Name;
+            if (coinflipPlayer1NameChoiceEl) coinflipPlayer1NameChoiceEl.textContent = player1Name;
         } else {
-            document.getElementById('player1Name').textContent = 'Spieler 1';
-            document.getElementById('player1ScoreLabel').textContent = 'Spieler 1';
+            const player1NameEl = document.getElementById('player1Name');
+            const player1ScoreLabelEl = document.getElementById('player1ScoreLabel');
+            const coinflipPlayer1NameEl = document.getElementById('coinflipPlayer1Name');
+            const coinflipPlayer1NameChoiceEl = document.getElementById('coinflipPlayer1NameChoice');
+            
+            if (player1NameEl) player1NameEl.textContent = 'Spieler 1';
+            if (player1ScoreLabelEl) player1ScoreLabelEl.textContent = 'Spieler 1';
+            if (coinflipPlayer1NameEl) coinflipPlayer1NameEl.textContent = 'Spieler 1';
+            if (coinflipPlayer1NameChoiceEl) coinflipPlayer1NameChoiceEl.textContent = 'Spieler 1';
         }
         
         if (player2Select.value) {
-            document.getElementById('player2Name').textContent = player2Name;
-            document.getElementById('player2ScoreLabel').textContent = player2Name;
+            const player2NameEl = document.getElementById('player2Name');
+            const player2ScoreLabelEl = document.getElementById('player2ScoreLabel');
+            
+            if (player2NameEl) player2NameEl.textContent = player2Name;
+            if (player2ScoreLabelEl) player2ScoreLabelEl.textContent = player2Name;
         } else {
-            document.getElementById('player2Name').textContent = 'Spieler 2';
-            document.getElementById('player2ScoreLabel').textContent = 'Spieler 2';
+            const player2NameEl = document.getElementById('player2Name');
+            const player2ScoreLabelEl = document.getElementById('player2ScoreLabel');
+            
+            if (player2NameEl) player2NameEl.textContent = 'Spieler 2';
+            if (player2ScoreLabelEl) player2ScoreLabelEl.textContent = 'Spieler 2';
         }
+        
+        updateCoinflipButtonState();
+    }
+    
+    // Münzwurf-Button aktivieren/deaktivieren
+    function updateCoinflipButtonState() {
+        if (!player1Select || !player2Select || !performCoinflipBtn) return;
+        
+        const hasPlayers = player1Select.value && player2Select.value && player1Select.value !== player2Select.value;
+        const hasChoice = document.querySelector('input[name="coinChoice"]:checked');
+        performCoinflipBtn.disabled = !(hasPlayers && hasChoice);
+    }
+    
+    // Seitenwahl-Button aktivieren/deaktivieren
+    function updateSideChoiceButtonState() {
+        if (!confirmSideChoiceBtn) return;
+        
+        const hasSideChoice = document.querySelector('input[name="winnerSide"]:checked');
+        confirmSideChoiceBtn.disabled = !hasSideChoice;
     }
     
     // Automatische Seitenzuweisung (verschiedene Seiten)
     function updateSideAssignment() {
         if (player1Side.value === player2Side.value) {
-            // Wenn beide auf derselben Seite sind, ändere die andere
             if (player1Side.value === 'blau') {
                 player2Side.value = 'weiss';
             } else {
@@ -164,24 +367,198 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Ajax-Münzwurf durchführen
+    async function performCoinflip() {
+        const coinChoiceElement = document.querySelector('input[name="coinChoice"]:checked');
+        if (!coinChoiceElement) {
+            alert('Bitte wählen Sie Kopf oder Zahl.');
+            return;
+        }
+        
+        if (!player1Select || !player2Select || !performCoinflipBtn) {
+            console.error('Benötigte DOM-Elemente nicht gefunden');
+            return;
+        }
+        
+        const player1Choice = coinChoiceElement.value;
+        
+        performCoinflipBtn.disabled = true;
+        performCoinflipBtn.innerHTML = '<i class="ph-circle-notch ph-spin"></i> Münze fliegt...';
+        
+        try {
+            // FormData verwenden statt JSON für bessere Kompatibilität mit Slim
+            const formData = new FormData();
+            formData.append('player1Id', player1Select.value);
+            formData.append('player2Id', player2Select.value);
+            formData.append('player1Choice', player1Choice);
+            
+            const response = await fetch('{{ url_for("matches.coinflip.ajax") }}', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Münzwurf-Daten speichern
+                currentCoinflipData = data.coinflipResult;
+                
+                // Ergebnis anzeigen
+                const descriptionEl = document.getElementById('coinflipDescription');
+                if (descriptionEl) {
+                    descriptionEl.textContent = data.description;
+                }
+                
+                // Münz-Animation
+                const coinVisualEl = document.getElementById('coinVisual');
+                if (coinVisualEl) {
+                    coinVisualEl.className = 'coin-visual ' + (data.coinflipResult.coinflipResult === 'kopf' ? 'heads' : 'tails');
+                    coinVisualEl.innerHTML = data.coinflipResult.coinflipResult === 'kopf' ? '<i class="ph-circle"></i>' : '<i class="ph-hash"></i>';
+                }
+                
+                // Gewinner-Name für Seitenwahl setzen
+                const winnerNameEl = document.getElementById('winnerName');
+                if (winnerNameEl) {
+                    winnerNameEl.textContent = data.winner.name;
+                }
+                
+                // Ergebnis-Bereich anzeigen
+                const coinflipResultEl = document.getElementById('coinflipResult');
+                if (coinflipResultEl) {
+                    coinflipResultEl.style.display = 'block';
+                }
+                
+                // Seitenwahl für Gewinner anzeigen
+                const winnerSideChoiceEl = document.getElementById('winnerSideChoice');
+                if (winnerSideChoiceEl) {
+                    winnerSideChoiceEl.style.display = 'block';
+                }
+                
+                // Button zurücksetzen
+                performCoinflipBtn.innerHTML = '<i class="ph-coin"></i> Erneut werfen';
+                performCoinflipBtn.disabled = false;
+                
+                // Seitenwahl-Inputs zurücksetzen
+                winnerSideInputs.forEach(input => input.checked = false);
+                updateSideChoiceButtonState();
+                
+            } else {
+                alert('Fehler beim Münzwurf: ' + (data.errors ? data.errors.join(', ') : 'Unbekannter Fehler'));
+                performCoinflipBtn.innerHTML = '<i class="ph-coin"></i> Münze werfen!';
+                performCoinflipBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('Ajax Fehler Details:', error);
+            alert('Netzwerkfehler beim Münzwurf. Bitte versuchen Sie es erneut.');
+            performCoinflipBtn.innerHTML = '<i class="ph-coin"></i> Münze werfen!';
+            performCoinflipBtn.disabled = false;
+        }
+    }
+    
+    // Seitenwahl des Gewinners bestätigen
+    async function confirmWinnerSideChoice() {
+        const selectedSide = document.querySelector('input[name="winnerSide"]:checked');
+        if (!selectedSide) {
+            alert('Bitte wählen Sie eine Seite aus.');
+            return;
+        }
+        
+        const winnerSideChoiceValue = selectedSide.value;
+        
+        confirmSideChoiceBtn.disabled = true;
+        confirmSideChoiceBtn.innerHTML = '<i class="ph-circle-notch ph-spin"></i> Wird gesetzt...';
+        
+        try {
+            const formData = new FormData();
+            formData.append('coinflipData', JSON.stringify(currentCoinflipData));
+            formData.append('winnerSideChoice', winnerSideChoiceValue);
+            
+            const response = await fetch('{{ url_for("matches.coinflip.winner.side") }}', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Seitenwahl automatisch setzen
+                const assignment = data.sideAssignment;
+                player1Side.value = assignment.player1Side;
+                player2Side.value = assignment.player2Side;
+                
+                // Vollständige Coinflip-Daten für das Formular speichern
+                coinflipDataInput.value = JSON.stringify(data.completeCoinflipData);
+                
+                // Seitenwahl-Bereich ausblenden - mit Null-Check
+                const winnerChoiceElement = document.getElementById('winnerSideChoice');
+                if (winnerChoiceElement) {
+                    winnerChoiceElement.style.display = 'none';
+                }
+                
+                // Erfolgs-Feedback
+                const descriptionElement = document.getElementById('coinflipDescription');
+                if (descriptionElement) {
+                    descriptionElement.textContent += ' Die Seitenzuweisung wurde gesetzt!';
+                }
+                
+                // Button zurücksetzen
+                confirmSideChoiceBtn.innerHTML = '<i class="ph-check-circle"></i> Seite bestätigen';
+                confirmSideChoiceBtn.disabled = false;
+                
+            } else {
+                alert('Fehler bei der Seitenwahl: ' + (data.errors ? data.errors.join(', ') : 'Unbekannter Fehler'));
+                confirmSideChoiceBtn.innerHTML = '<i class="ph-check-circle"></i> Seite bestätigen';
+                confirmSideChoiceBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('Ajax Fehler Details:', error);
+            alert('Netzwerkfehler bei der Seitenwahl. Bitte versuchen Sie es erneut.');
+            confirmSideChoiceBtn.innerHTML = '<i class="ph-check-circle"></i> Seite bestätigen';
+            confirmSideChoiceBtn.disabled = false;
+        }
+    }
+    
     // Event Listeners
     player1Select.addEventListener('change', updatePlayerNames);
     player2Select.addEventListener('change', updatePlayerNames);
     
-    player1Side.addEventListener('change', function() {
-        if (this.value === player2Side.value) {
-            player2Side.value = this.value === 'blau' ? 'weiss' : 'blau';
-        }
+    coinChoiceInputs.forEach(input => {
+        input.addEventListener('change', updateCoinflipButtonState);
     });
     
-    player2Side.addEventListener('change', function() {
-        if (this.value === player1Side.value) {
-            player1Side.value = this.value === 'blau' ? 'weiss' : 'blau';
-        }
+    winnerSideInputs.forEach(input => {
+        input.addEventListener('change', updateSideChoiceButtonState);
     });
+    
+    if (performCoinflipBtn) {
+        performCoinflipBtn.addEventListener('click', performCoinflip);
+    }
+    
+    if (confirmSideChoiceBtn) {
+        confirmSideChoiceBtn.addEventListener('click', confirmWinnerSideChoice);
+    }
+    
+    if (player1Side) {
+        player1Side.addEventListener('change', function() {
+            if (player2Side && this.value === player2Side.value) {
+                player2Side.value = this.value === 'blau' ? 'weiss' : 'blau';
+            }
+        });
+    }
+    
+    if (player2Side) {
+        player2Side.addEventListener('change', function() {
+            if (player1Side && this.value === player1Side.value) {
+                player1Side.value = this.value === 'blau' ? 'weiss' : 'blau';
+            }
+        });
+    }
     
     // Initiale Updates
     updatePlayerNames();
+    updateCoinflipButtonState();
 });
 </script>
 {% endblock %} 

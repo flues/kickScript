@@ -26,6 +26,7 @@ class GameMatch implements JsonSerializable
     private ?string $notes = null;
     private string $player1Side = self::SIDE_BLUE;  // Default: Spieler 1 auf blauer Seite
     private string $player2Side = self::SIDE_WHITE; // Default: Spieler 2 auf weißer Seite
+    private ?array $coinflipData = null; // Münzwurf-Daten falls verwendet
 
     public function __construct(
         string $player1Id,
@@ -35,7 +36,8 @@ class GameMatch implements JsonSerializable
         ?\DateTimeImmutable $playedAt = null,
         ?string $notes = null,
         string $player1Side = self::SIDE_BLUE,
-        string $player2Side = self::SIDE_WHITE
+        string $player2Side = self::SIDE_WHITE,
+        ?array $coinflipData = null
     ) {
         $this->id = uniqid('match_');
         $this->player1Id = $player1Id;
@@ -46,6 +48,7 @@ class GameMatch implements JsonSerializable
         $this->notes = $notes;
         $this->setPlayer1Side($player1Side);
         $this->setPlayer2Side($player2Side);
+        $this->coinflipData = $coinflipData;
     }
 
     public static function fromArray(array $data): self
@@ -62,7 +65,8 @@ class GameMatch implements JsonSerializable
             $playedAt,
             $data['notes'] ?? null,
             $data['player1Side'] ?? self::SIDE_BLUE,
-            $data['player2Side'] ?? self::SIDE_WHITE
+            $data['player2Side'] ?? self::SIDE_WHITE,
+            $data['coinflipData'] ?? null
         );
         
         if (isset($data['id'])) {
@@ -265,6 +269,75 @@ class GameMatch implements JsonSerializable
         }
         return 0;
     }
+
+    /**
+     * Gibt die Coinflip-Daten zurück
+     */
+    public function getCoinflipData(): ?array
+    {
+        return $this->coinflipData;
+    }
+
+    /**
+     * Setzt die Coinflip-Daten
+     */
+    public function setCoinflipData(?array $coinflipData): self
+    {
+        $this->coinflipData = $coinflipData;
+        return $this;
+    }
+
+    /**
+     * Überprüft, ob die Seitenzuweisung durch einen Münzwurf erfolgte
+     */
+    public function hasCoinflipData(): bool
+    {
+        return $this->coinflipData !== null;
+    }
+
+    /**
+     * Gibt das Ergebnis des Münzwurfs zurück
+     */
+    public function getCoinflipResult(): ?string
+    {
+        return $this->coinflipData['coinflipResult'] ?? null;
+    }
+
+    /**
+     * Gibt die Wahl von Spieler 1 beim Münzwurf zurück
+     */
+    public function getPlayer1CoinChoice(): ?string
+    {
+        return $this->coinflipData['sideAssignment']['player1Choice'] ?? null;
+    }
+
+    /**
+     * Gibt zurück, wer den Münzwurf gewonnen hat (1 oder 2)
+     */
+    public function getCoinflipWinner(): ?int
+    {
+        return $this->coinflipData['sideAssignment']['winner'] ?? null;
+    }
+
+    /**
+     * Erstellt eine lesbare Beschreibung des Münzwurfs
+     */
+    public function getCoinflipDescription(): ?string
+    {
+        if (!$this->hasCoinflipData()) {
+            return null;
+        }
+
+        $result = $this->getCoinflipResult();
+        $choice = $this->getPlayer1CoinChoice();
+        $winner = $this->getCoinflipWinner();
+
+        $resultText = $result === 'kopf' ? 'Kopf' : 'Zahl';
+        $choiceText = $choice === 'kopf' ? 'Kopf' : 'Zahl';
+        $winnerText = $winner === 1 ? 'Spieler 1' : 'Spieler 2';
+
+        return "Spieler 1 wählte {$choiceText}. Die Münze zeigt {$resultText}. {$winnerText} gewinnt den Münzwurf!";
+    }
     
     public function jsonSerialize(): array
     {
@@ -279,6 +352,7 @@ class GameMatch implements JsonSerializable
             'notes' => $this->notes,
             'player1Side' => $this->player1Side,
             'player2Side' => $this->player2Side,
+            'coinflipData' => $this->coinflipData,
         ];
     }
 } 

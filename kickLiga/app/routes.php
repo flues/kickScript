@@ -30,6 +30,10 @@ return function (App $app) {
         $group->get('', [MatchController::class, 'matchHistory'])->setName('matches.history');
         $group->get('/new', [MatchController::class, 'createMatchForm'])->setName('matches.create');
         $group->post('', [MatchController::class, 'createMatch'])->setName('matches.store');
+        $group->get('/coinflip', [MatchController::class, 'coinflipForm'])->setName('matches.coinflip');
+        $group->post('/coinflip', [MatchController::class, 'performCoinflip'])->setName('matches.coinflip.perform');
+        $group->post('/coinflip-ajax', [MatchController::class, 'performCoinflipAjax'])->setName('matches.coinflip.ajax');
+        $group->post('/coinflip-winner-side', [MatchController::class, 'coinflipWinnerSideChoice'])->setName('matches.coinflip.winner.side');
         // Weitere Match-Routen hier (z.B. für Details, Bearbeiten, Löschen)
     });
 

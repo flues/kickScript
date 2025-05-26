@@ -49,6 +49,7 @@ class MatchService
      * @param string|null $notes Notizen zum Spiel (optional)
      * @param string $player1Side Seite des ersten Spielers (blau/weiss)
      * @param string $player2Side Seite des zweiten Spielers (blau/weiss)
+     * @param array|null $coinflipData Münzwurf-Daten (optional)
      * @return GameMatch Das erstellte Match
      * @throws RuntimeException Wenn ein Spieler nicht gefunden wird oder das Speichern fehlschlägt
      */
@@ -60,7 +61,8 @@ class MatchService
         ?\DateTimeImmutable $playedAt = null,
         ?string $notes = null,
         string $player1Side = GameMatch::SIDE_BLUE,
-        string $player2Side = GameMatch::SIDE_WHITE
+        string $player2Side = GameMatch::SIDE_WHITE,
+        ?array $coinflipData = null
     ): GameMatch {
         // Validiere die Seitenwahl
         $this->validateSides($player1Side, $player2Side);
@@ -74,7 +76,7 @@ class MatchService
         }
         
         // Erstelle das Match mit Seitenwahl
-        $match = new GameMatch($player1Id, $player2Id, $scorePlayer1, $scorePlayer2, $playedAt, $notes, $player1Side, $player2Side);
+        $match = new GameMatch($player1Id, $player2Id, $scorePlayer1, $scorePlayer2, $playedAt, $notes, $player1Side, $player2Side, $coinflipData);
         
         // Berechne die ELO-Änderungen
         $match = $this->eloService->processMatchRatings($match, $player1, $player2);

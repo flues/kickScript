@@ -118,5 +118,50 @@
         "notes": "crazy close game",
         "player1Side": "blau",
         "player2Side": "weiss"
+    },
+    "match_68344eb51776d": {
+        "id": "match_68344eb51776d",
+        "player1Id": "player_682488d836b86",
+        "player2Id": "player_6824864e806f9",
+        "scorePlayer1": 10,
+        "scorePlayer2": 3,
+        "playedAt": 1748258460,
+        "eloChange": {
+            "player1": 25,
+            "player2": -25
+        },
+        "notes": "unerwartet unknapp",
+        "player1Side": "weiss",
+        "player2Side": "blau"
+    },
+    "match_6834668bcb9a3": {
+        "id": "match_6834668bcb9a3",
+        "player1Id": "player_682488d836b86",
+        "player2Id": "player_682493ca1a3c7",
+        "scorePlayer1": 7,
+        "scorePlayer2": 3,
+        "playedAt": 1748264520,
+        "eloChange": {
+            "player1": 17,
+            "player2": -17
+        },
+        "notes": "Cool",
+        "player1Side": "weiss",
+        "player2Side": "blau",
+        "coinflipData": {
+            "coinflipResult": "kopf",
+            "sideAssignment": {
+                "player1Side": "weiss",
+                "player2Side": "blau",
+                "winner": 2,
+                "coinResult": "kopf",
+                "player1Choice": "zahl"
+            },
+            "timestamp": {
+                "date": "2025-05-26 15:02:24.846830",
+                "timezone_type": 3,
+                "timezone": "Europe\/Berlin"
+            }
+        }
     }
 }

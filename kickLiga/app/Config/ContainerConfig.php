@@ -14,6 +14,7 @@ use App\Services\MatchService;
 use App\Services\EloService;
 use App\Services\SeasonService;
 use App\Services\AchievementService;
+use App\Services\CoinflipService;
 use DI\Container;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
@@ -103,6 +104,11 @@ class ContainerConfig
                 );
             },
             
+            // CoinflipService
+            CoinflipService::class => function () {
+                return new CoinflipService();
+            },
+            
             // Twig View
             'view' => function (Container $container) {
                 $twig = Twig::create(__DIR__ . '/../../templates', [
@@ -154,6 +160,7 @@ class ContainerConfig
                     $container->get('view'),
                     $container->get(MatchService::class),
                     $container->get(PlayerService::class),
+                    $container->get(CoinflipService::class),
                     $container->get(SeasonService::class),
                     $container->get(AchievementService::class)
                 );

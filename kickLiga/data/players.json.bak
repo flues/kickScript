@@ -15,7 +15,14 @@
             "tournamentsParticipated": 0,
             "matchesPlayed": 3
         },
-        "achievements": [],
+        "achievements": [
+            {
+                "id": "goal_machine",
+                "name": "🚀 Tormaschine",
+                "description": "Durchschnittlich 5+ Tore pro Spiel (min. 3 Spiele)",
+                "unlockedAt": 1748258485
+            }
+        ],
         "eloHistory": [
             {
                 "rating": 1000,
@@ -49,16 +56,16 @@
         "name": "Bombardiro Crocodilo",
         "nickname": null,
         "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExcDRxcW5odm1jem5vZzBuZzNwZGl0eXhudGVva21zYXJ3am5xN2YwMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/fkNqwkJArJ4FIJVWQK\/giphy.webp",
-        "eloRating": 935,
+        "eloRating": 918,
         "statistics": {
             "wins": 0,
-            "losses": 3,
+            "losses": 4,
             "draws": 0,
-            "goalsScored": 11,
-            "goalsConceded": 30,
+            "goalsScored": 12,
+            "goalsConceded": 39,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 3
+            "matchesPlayed": 4
         },
         "achievements": [],
         "eloHistory": [
@@ -84,26 +91,32 @@
                 "change": -20,
                 "timestamp": 1747226348,
                 "reason": "Match gegen Tung Tung Tung Tung Tung Sahur"
+            },
+            {
+                "rating": 918,
+                "change": -17,
+                "timestamp": 1748264999,
+                "reason": "Match gegen Phil"
             }
         ],
         "createdAt": 1747224224,
-        "lastMatch": 1747226348
+        "lastMatch": 1748264999
     },
     "player_682488d836b86": {
         "id": "player_682488d836b86",
         "name": "Phil",
         "nickname": null,
         "avatar": "https:\/\/media4.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExb3UwN2duNzFwZXZ2b3ExY2NyZmkzeXNnY2x1cWc5aTJwcnE2ZHZzaSZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/13w5HmyiuaZ224\/200.webp",
-        "eloRating": 1048,
+        "eloRating": 1082,
         "statistics": {
-            "wins": 4,
+            "wins": 6,
             "losses": 1,
             "draws": 0,
-            "goalsScored": 42,
-            "goalsConceded": 32,
+            "goalsScored": 58,
+            "goalsConceded": 36,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 5
+            "matchesPlayed": 7
         },
         "achievements": [
             {
@@ -123,6 +136,18 @@
                 "name": "💀 Bad Keeper",
                 "description": "Meiste Gegentore in der aktuellen Saison",
                 "unlockedAt": 1748258485
+            },
+            {
+                "id": "winning_streak_3",
+                "name": "🏆 Winning Streak (3)",
+                "description": "3 Siege in Folge",
+                "unlockedAt": 1748264587
+            },
+            {
+                "id": "goal_difference_king",
+                "name": "📈 Tordifferenz-König",
+                "description": "+20 Tordifferenz insgesamt",
+                "unlockedAt": 1748264999
             }
         ],
         "eloHistory": [
@@ -160,26 +185,38 @@
                 "change": 25,
                 "timestamp": 1748258485,
                 "reason": "Match gegen Tralalero Tralala"
+            },
+            {
+                "rating": 1065,
+                "change": 17,
+                "timestamp": 1748264587,
+                "reason": "Match gegen zSinanProxGAMERhdLP"
+            },
+            {
+                "rating": 1082,
+                "change": 17,
+                "timestamp": 1748264999,
+                "reason": "Match gegen Bombardiro Crocodilo"
             }
         ],
         "createdAt": 1747224792,
-        "lastMatch": 1748258485
+        "lastMatch": 1748264999
     },
     "player_682493ca1a3c7": {
         "id": "player_682493ca1a3c7",
         "name": "zSinanProxGAMERhdLP",
         "nickname": null,
         "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExbDAwODR3bnVlOG5zMW90a2NoajllZTB3czcyam5ma2IwejEzdGtkayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/l4jGvc7xVeDQWMt4ak\/giphy.gif",
-        "eloRating": 977,
+        "eloRating": 960,
         "statistics": {
             "wins": 1,
-            "losses": 3,
+            "losses": 4,
             "draws": 0,
-            "goalsScored": 29,
-            "goalsConceded": 32,
+            "goalsScored": 32,
+            "goalsConceded": 39,
             "tournamentsWon": 0,
             "tournamentsParticipated": 0,
-            "matchesPlayed": 4
+            "matchesPlayed": 5
         },
         "achievements": [
             {
@@ -224,9 +261,15 @@
                 "change": -15,
                 "timestamp": 1747827105,
                 "reason": "Match gegen Phil"
+            },
+            {
+                "rating": 960,
+                "change": -17,
+                "timestamp": 1748264587,
+                "reason": "Match gegen Phil"
             }
         ],
         "createdAt": 1747227594,
-        "lastMatch": 1747827105
+        "lastMatch": 1748264587
     }
 }
