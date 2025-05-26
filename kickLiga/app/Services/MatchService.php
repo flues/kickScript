@@ -331,6 +331,7 @@ class MatchService
         // Spieler 1 aktualisieren
         $player1->updateMatchStatistics(
             $match->isPlayer1Winner(),
+            $match->isDraw(),
             $match->getScorePlayer1(),
             $match->getScorePlayer2()
         );
@@ -338,6 +339,7 @@ class MatchService
         // Spieler 2 aktualisieren
         $player2->updateMatchStatistics(
             $match->isPlayer2Winner(),
+            $match->isDraw(),
             $match->getScorePlayer2(),
             $match->getScorePlayer1()
         );
