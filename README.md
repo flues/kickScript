@@ -67,8 +67,6 @@ composer install
   
   *Interaktives Münzwurf-Interface mit Animationen für faire Tischseitenwahl. Vollständig integriert in das Match-Erfassungssystem mit automatischer Seitenzuweisung.*
 
-### 📋 Projektmanagement
-- **[todo.md](.docs/todo.md)** - Aktueller Entwicklungsstatus und Arbeitsplan
 
 ## 🎮 Hauptfunktionen
 
