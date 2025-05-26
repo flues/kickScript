@@ -87,12 +87,13 @@ class ContainerConfig
                 );
             },
             
-            // MatchService (benötigt DataService, EloService - NICHT PlayerService)
+            // MatchService (benötigt DataService, EloService und ComputationService)
             MatchService::class => function (Container $container) {
                 return new MatchService(
                     $container->get(DataService::class),
                     null, // PlayerService entfernt um zirkuläre Abhängigkeit zu vermeiden
                     $container->get(EloService::class),
+                    $container->get(ComputationService::class),
                     $container->get(LoggerInterface::class)
                 );
             },

@@ -1,19 +1,4 @@
 {
-    "match_682486f6eb8e2": {
-        "id": "match_682486f6eb8e2",
-        "player1Id": "player_682486a0a34bd",
-        "player2Id": "player_6824864e806f9",
-        "scorePlayer1": 2,
-        "scorePlayer2": 10,
-        "playedAt": 1747224240,
-        "eloChange": {
-            "player1": -27,
-            "player2": 27
-        },
-        "notes": "Bodenlose Kurbeltore von Tralalero, Bombardiro heute aber auch nicht ausgeschlafen.",
-        "player1Side": "blau",
-        "player2Side": "weiss"
-    },
     "match_68248726ec318": {
         "id": "match_68248726ec318",
         "player1Id": "player_68248673345da",
@@ -119,19 +104,34 @@
         "player1Side": "blau",
         "player2Side": "weiss"
     },
-    "match_68344eb51776d": {
-        "id": "match_68344eb51776d",
+    "match_6834faf915ac2": {
+        "id": "match_6834faf915ac2",
         "player1Id": "player_682488d836b86",
-        "player2Id": "player_6824864e806f9",
+        "player2Id": "player_682493ca1a3c7",
         "scorePlayer1": 10,
         "scorePlayer2": 3,
-        "playedAt": 1748258460,
+        "playedAt": 1748258400,
         "eloChange": {
-            "player1": 25,
-            "player2": -25
+            "player1": 0,
+            "player2": 0
         },
-        "notes": "unerwartet unknapp",
+        "notes": "unerwartet unknapp :D",
         "player1Side": "weiss",
-        "player2Side": "blau"
+        "player2Side": "blau",
+        "coinflipData": {
+            "coinflipResult": "kopf",
+            "sideAssignment": {
+                "player1Side": "weiss",
+                "player2Side": "blau",
+                "winner": 1,
+                "coinResult": "kopf",
+                "player1Choice": "kopf"
+            },
+            "timestamp": {
+                "date": "2025-05-27 01:35:59.288141",
+                "timezone_type": 3,
+                "timezone": "Europe\/Berlin"
+            }
+        }
     }
 }

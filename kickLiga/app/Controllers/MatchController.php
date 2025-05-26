@@ -326,10 +326,8 @@ class MatchController
                 $coinflipData
             );
             
-            // Aktualisiere die aktive Saison mit dem neuen Match, wenn SeasonService verfügbar ist
-            if ($this->seasonService !== null) {
-                $this->seasonService->updateSeasonWithMatch($match);
-            }
+            // In der SSOT-Architektur werden Saison-Daten automatisch zur Laufzeit berechnet
+            // Keine manuelle Aktualisierung der Saison-Statistiken erforderlich
             
             // Überprüfe Achievements für beide Spieler nach dem Match
             if ($this->achievementService !== null) {
@@ -477,13 +475,10 @@ class MatchController
             // Dies ist notwendig für das Single Source of Truth Konzept
             $this->playerService->invalidateCache();
             
-            // Auch SeasonService Cache invalidieren und Statistiken neu berechnen, falls verfügbar
+            // Auch SeasonService Cache invalidieren, falls verfügbar
+            // In der SSOT-Architektur werden alle Statistiken zur Laufzeit neu berechnet
             if ($this->seasonService !== null) {
                 $this->seasonService->invalidateCache();
-                
-                // Alle Saisonstatistiken neu berechnen mit den aktuellen Matches
-                $allMatches = $this->matchService->getAllMatches();
-                $this->seasonService->rebuildAllSeasonStatistics($allMatches);
             }
             
         } catch (\Exception $e) {

@@ -102,4 +102,66 @@ class EloService
         
         return self::K_FACTOR * $modifier;
     }
+
+    /**
+     * Berechnet die ELO-Änderungen für ein Match basierend auf aktuellen Ratings
+     *
+     * @param int $player1Rating Aktuelles ELO-Rating von Spieler 1
+     * @param int $player2Rating Aktuelles ELO-Rating von Spieler 2
+     * @param int $scorePlayer1 Tore von Spieler 1
+     * @param int $scorePlayer2 Tore von Spieler 2
+     * @return array Array mit ELO-Änderungen ['player1' => int, 'player2' => int]
+     */
+    public function calculateEloChanges(
+        int $player1Rating,
+        int $player2Rating,
+        int $scorePlayer1,
+        int $scorePlayer2
+    ): array {
+        // Berechne die erwarteten Werte für beide Spieler
+        $expectedPlayer1 = $this->calculateExpectedScore($player1Rating, $player2Rating);
+        $expectedPlayer2 = $this->calculateExpectedScore($player2Rating, $player1Rating);
+        
+        // Bestimme die tatsächlichen Werte (1 für Sieg, 0.5 für Unentschieden, 0 für Niederlage)
+        $actualPlayer1 = $scorePlayer1 > $scorePlayer2 ? 1 : ($scorePlayer1 === $scorePlayer2 ? 0.5 : 0);
+        $actualPlayer2 = $scorePlayer2 > $scorePlayer1 ? 1 : ($scorePlayer1 === $scorePlayer2 ? 0.5 : 0);
+        
+        // Passe den K-Faktor basierend auf der Tordifferenz an
+        $goalDifference = abs($scorePlayer1 - $scorePlayer2);
+        $kFactor = $this->adjustKFactorByGoalDifferenceStatic($goalDifference, $scorePlayer1 === $scorePlayer2);
+        
+        // Berechne die ELO-Änderungen
+        $player1Change = (int)round($kFactor * ($actualPlayer1 - $expectedPlayer1));
+        $player2Change = (int)round($kFactor * ($actualPlayer2 - $expectedPlayer2));
+        
+        if ($this->logger) {
+            $this->logger->info("ELO-Änderungen berechnet: Spieler 1 ({$player1Change}), Spieler 2 ({$player2Change})");
+        }
+        
+        return [
+            'player1' => $player1Change,
+            'player2' => $player2Change
+        ];
+    }
+
+    /**
+     * Statische Version der K-Faktor-Anpassung basierend auf der Tordifferenz
+     *
+     * @param int $goalDifference Die absolute Tordifferenz
+     * @param bool $isDraw Ob das Spiel unentschieden war
+     * @return float Der angepasste K-Faktor
+     */
+    private function adjustKFactorByGoalDifferenceStatic(int $goalDifference, bool $isDraw): float
+    {
+        // Bei einem Unentschieden oder einer Tordifferenz von 1 bleibt der K-Faktor unverändert
+        if ($isDraw || $goalDifference <= 1) {
+            return self::K_FACTOR;
+        }
+        
+        // Je höher die Tordifferenz, desto höher der K-Faktor
+        // Aber wir begrenzen den Einfluss, um extrem hohe Tordifferenzen nicht zu stark zu gewichten
+        $modifier = 1 + (min($goalDifference, 10) - 1) * self::GOAL_DIFFERENCE_IMPACT;
+        
+        return self::K_FACTOR * $modifier;
+    }
 } 

@@ -15,6 +15,7 @@ class MatchService
     private DataService $dataService;
     private ?PlayerService $playerService;
     private EloService $eloService;
+    private ?ComputationService $computationService;
     private ?LoggerInterface $logger;
 
     /**
@@ -23,17 +24,20 @@ class MatchService
      * @param DataService $dataService DataService-Instanz
      * @param PlayerService|null $playerService PlayerService-Instanz (optional für SSOT)
      * @param EloService $eloService EloService-Instanz
+     * @param ComputationService|null $computationService ComputationService für ELO-Berechnung
      * @param LoggerInterface|null $logger Logger-Instanz
      */
     public function __construct(
         DataService $dataService,
         ?PlayerService $playerService,
         EloService $eloService,
+        ?ComputationService $computationService = null,
         ?LoggerInterface $logger = null
     ) {
         $this->dataService = $dataService;
         $this->playerService = $playerService;
         $this->eloService = $eloService;
+        $this->computationService = $computationService;
         $this->logger = $logger;
     }
 
@@ -72,7 +76,26 @@ class MatchService
         // Erstelle das Match mit Seitenwahl
         $match = new GameMatch($player1Id, $player2Id, $scorePlayer1, $scorePlayer2, $playedAt, $notes, $player1Side, $player2Side, $coinflipData);
         
-        // Speichere das Match (ELO wird im SSOT-Konzept nicht hier berechnet)
+        // Berechne ELO-Änderungen für das neue Match
+        if ($this->computationService !== null) {
+            $player1CurrentElo = $this->computationService->computeCurrentEloRating($player1Id);
+            $player2CurrentElo = $this->computationService->computeCurrentEloRating($player2Id);
+            
+            $eloChanges = $this->eloService->calculateEloChanges(
+                $player1CurrentElo,
+                $player2CurrentElo,
+                $scorePlayer1,
+                $scorePlayer2
+            );
+            
+            $match->setEloChanges($eloChanges['player1'], $eloChanges['player2']);
+            
+            if ($this->logger) {
+                $this->logger->info("ELO-Änderungen für Match berechnet: Spieler 1 ({$eloChanges['player1']}), Spieler 2 ({$eloChanges['player2']})");
+            }
+        }
+        
+        // Speichere das Match mit den berechneten ELO-Änderungen
         $success = $this->saveMatch($match);
         
         if (!$success) {
@@ -324,8 +347,6 @@ class MatchService
         
         return $updatedCount;
     }
-
-
 
     /**
      * Gibt alle Matches als Array zurück (interne Verwendung)
