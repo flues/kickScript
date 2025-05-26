@@ -52,10 +52,15 @@ class SeasonController
         foreach ($seasons as $season) {
             $seasonStatistics = $this->seasonService->getSeasonStatistics($season->getId());
             
-            $enrichedSeasons[] = (object) array_merge((array) $season, [
+            $enrichedSeasons[] = (object) [
+                'id' => $season->getId(),
+                'name' => $season->getName(),
+                'startDate' => $season->getStartDate(),
+                'endDate' => $season->getEndDate(),
+                'isActive' => $season->isActive(),
                 'effectiveEndDate' => $season->getEffectiveEndDate(),
                 'statistics' => $seasonStatistics
-            ]);
+            ];
         }
 
         $activeSeason = $this->seasonService->getActiveSeason();

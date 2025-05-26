@@ -165,6 +165,9 @@ class SeasonService
             $startDate = new \DateTimeImmutable($startDate->format('Y-m-01'));
         }
         
+        // Beende alle anderen aktiven Saisons
+        $this->endAllActiveSeasons();
+        
         $season = new Season($name, $startDate);
         $this->saveSeason($season);
         
@@ -220,6 +223,32 @@ class SeasonService
         
         if ($success && $this->logger) {
             $this->logger->info("Saison {$season->getName()} beendet");
+        }
+        
+        return $success;
+    }
+
+    /**
+     * Beendet alle aktiven Saisons
+     *
+     * @return bool True bei Erfolg
+     */
+    private function endAllActiveSeasons(): bool
+    {
+        $seasons = $this->getAllSeasons();
+        $success = true;
+        
+        foreach ($seasons as $season) {
+            if ($season->isActive()) {
+                $season->endSeason();
+                if (!$this->saveSeason($season)) {
+                    $success = false;
+                }
+                
+                if ($this->logger) {
+                    $this->logger->info("Saison {$season->getName()} automatisch beendet für neue Saison");
+                }
+            }
         }
         
         return $success;

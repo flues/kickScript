@@ -93,11 +93,16 @@ class HomeController
                 $seasonStandings = $this->seasonService->getSeasonStandings($activeSeason->getId());
                 $seasonStatistics = $this->seasonService->getSeasonStatistics($activeSeason->getId());
                 
-                // Erweitere Saison-Objekt um berechnete Eigenschaften für Template
-                $activeSeason = (object) array_merge((array) $activeSeason, [
+                // Erstelle erweiterte Season-Daten für Template
+                $activeSeason = (object) [
+                    'id' => $activeSeason->getId(),
+                    'name' => $activeSeason->getName(),
+                    'startDate' => $activeSeason->getStartDate(),
+                    'endDate' => $activeSeason->getEndDate(),
+                    'isActive' => $activeSeason->isActive(),
                     'durationInDays' => $activeSeason->getDurationInDays(),
                     'effectiveEndDate' => $activeSeason->getEffectiveEndDate()
-                ]);
+                ];
             }
         }
         

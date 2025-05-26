@@ -2,7 +2,7 @@
     "season_682b172598d87": {
         "id": "season_682b172598d87",
         "name": "Richtige Mai Season",
-        "startDate": 1746050400,
+        "startDate": 1746057600,
         "endDate": null,
         "isActive": true,
         "standings": {
@@ -78,8 +78,8 @@
             }
         },
         "statistics": {
-            "totalMatches": 16,
-            "totalGoals": 228,
+            "totalMatches": 24,
+            "totalGoals": 350,
             "highestScore": {
                 "matchId": "match_682486f6eb8e2",
                 "winnerId": "player_6824864e806f9",
@@ -90,5 +90,12 @@
             },
             "longestWinStreak": null
         }
+    },
+    "season_6834f86cc2f34": {
+        "id": "season_6834f86cc2f34",
+        "name": "Mai 25",
+        "startDate": 1746050400,
+        "endDate": null,
+        "isActive": true
     }
 }

@@ -128,18 +128,19 @@ class Season implements JsonSerializable
     }
 
     /**
-     * Berechnet die Dauer der Saison in Tagen
+     * Berechnet die Anzahl der Tage seit dem Start der Saison
      */
     public function getDurationInDays(): int
     {
-        // Wenn kein explizites Enddatum gesetzt ist, verwende den letzten Tag des Startmonats
-        if ($this->endDate === null) {
-            $endDate = new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
+        // Für aktive Saisons: Tage seit Start bis heute
+        // Für beendete Saisons: Tage zwischen Start und Ende
+        if ($this->isActive && $this->endDate === null) {
+            $now = new \DateTimeImmutable();
+            return $this->startDate->diff($now)->days;
         } else {
-            $endDate = $this->endDate;
+            $endDate = $this->endDate ?? new \DateTimeImmutable();
+            return $this->startDate->diff($endDate)->days;
         }
-        
-        return $this->startDate->diff($endDate)->days;
     }
 
     /**
