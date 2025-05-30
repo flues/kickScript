@@ -55,3 +55,6 @@ yarn-error.log*
 
 # Cursor/VS Code specific
 .cursor-rules 
+
+# data files
+/kickLiga/data/
