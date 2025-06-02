@@ -24,7 +24,7 @@ Ein umfassendes webbasiertes System zur Verwaltung einer Tischfußball-Liga mit 
 - Webserver (Apache/Nginx) 
 - Moderne Browser mit JavaScript-Unterstützung
 
-### Installation
+### Quickstart Installation
 ```bash
 # Repository klonen
 git clone [repository-url] kickerliga
@@ -33,8 +33,15 @@ cd kickerliga
 # Dependencies installieren
 composer install
 
-# Webserver-Verzeichnis konfigurieren
+# Lokalen Server starten
+php -S localhost:1337 -t public
+# Lokale App aufrufen
+http://localhost:1337
+
+# Deploy: Webserver passend konfigurieren (PHP/htaccess)
+# Komplette App inkl. vendor-Ordner auf den Webserver hochladen
 # DocumentRoot auf 'public' Ordner zeigen lassen
+
 ```
 
 **👉 Detaillierte Installationsanleitung: [installation.md](.docs/installation.md)**
