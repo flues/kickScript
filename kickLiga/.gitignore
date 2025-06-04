@@ -52,3 +52,6 @@ yarn-error.log*
 
 # Uploaded files (falls User-Uploads implementiert werden)
 /uploads/ 
+
+#data ignorieren
+/kickLiga/data/
