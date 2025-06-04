@@ -3,8 +3,8 @@
         "id": "season_682b172598d87",
         "name": "Richtige Mai Season",
         "startDate": 1746057600,
-        "endDate": null,
-        "isActive": true
+        "endDate": 1748719153,
+        "isActive": false
     },
     "season_6834f86cc2f34": {
         "id": "season_6834f86cc2f34",
@@ -19,5 +19,19 @@
         "startDate": 1740783600,
         "endDate": 1743461999,
         "isActive": false
+    },
+    "season_683b5654c7f0b": {
+        "id": "season_683b5654c7f0b",
+        "name": "Juni 2025",
+        "startDate": 1748728800,
+        "endDate": 1749034338,
+        "isActive": false
+    },
+    "season_684025759cadb": {
+        "id": "season_684025759cadb",
+        "name": "Juni 2k25",
+        "startDate": 1748736000,
+        "endDate": null,
+        "isActive": true
     }
 }

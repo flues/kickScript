@@ -112,8 +112,8 @@
         "scorePlayer2": 3,
         "playedAt": 1748258400,
         "eloChange": {
-            "player1": 0,
-            "player2": 0
+            "player1": 22,
+            "player2": -22
         },
         "notes": "unerwartet unknapp :D",
         "player1Side": "weiss",
@@ -129,6 +129,36 @@
             },
             "timestamp": {
                 "date": "2025-05-27 01:35:59.288141",
+                "timezone_type": 3,
+                "timezone": "Europe\/Berlin"
+            }
+        }
+    },
+    "match_6836d4af2be61": {
+        "id": "match_6836d4af2be61",
+        "player1Id": "player_682493ca1a3c7",
+        "player2Id": "player_682488d836b86",
+        "scorePlayer1": 10,
+        "scorePlayer2": 8,
+        "playedAt": 1748423280,
+        "eloChange": {
+            "player1": 22,
+            "player2": -22
+        },
+        "notes": "fettes comeback von phil, aber reichte nicht aus.",
+        "player1Side": "weiss",
+        "player2Side": "blau",
+        "coinflipData": {
+            "coinflipResult": "zahl",
+            "sideAssignment": {
+                "player1Side": "weiss",
+                "player2Side": "blau",
+                "winner": 2,
+                "coinResult": "zahl",
+                "player1Choice": "kopf"
+            },
+            "timestamp": {
+                "date": "2025-05-28 11:08:45.783143",
                 "timezone_type": 3,
                 "timezone": "Europe\/Berlin"
             }

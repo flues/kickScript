@@ -52,8 +52,16 @@
                 <div class="col-md-3">
                     <div class="card bg-gradient-dark text-center mb-3">
                         <div class="card-body">
-                            <h2 class="mb-0">{{ season.endDate ? season.endDate|date('d.m.Y') : season.startDate|date('t.m.Y') }}</h2>
-                            <small class="text-muted">{{ season.endDate ? 'Ende' : 'Ende (voraussichtlich)' }}</small>
+                            {% if season.endDate %}
+                                <h2 class="mb-0">{{ season.endDate|date('d.m.Y') }}</h2>
+                                <small class="text-muted">Ende</small>
+                            {% elseif isActive %}
+                                <h2 class="mb-0">{{ season.startDate|date('t.m.Y') }}</h2>
+                                <small class="text-muted">Monat-Ende (offen)</small>
+                            {% else %}
+                                <h2 class="mb-0">{{ season.startDate|date('t.m.Y') }}</h2>
+                                <small class="text-muted">Ende (berechnet)</small>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

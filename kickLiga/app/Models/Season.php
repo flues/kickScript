@@ -112,6 +112,7 @@ class Season implements JsonSerializable
             return $this->endDate;
         }
         
+        // Für Saisons ohne explizites Enddatum:
         // Verwende den letzten Tag des Startmonats
         return new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
     }
@@ -148,14 +149,26 @@ class Season implements JsonSerializable
      */
     public function isMatchInSeason(\DateTimeImmutable $matchDate): bool
     {
-        // Wenn kein explizites Enddatum gesetzt ist, verwende den letzten Tag des Startmonats
-        if ($this->endDate === null) {
-            $seasonEnd = new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
-        } else {
-            $seasonEnd = $this->endDate;
+        // Match muss nach oder am Startdatum sein
+        if ($matchDate < $this->startDate) {
+            return false;
         }
         
-        return $matchDate >= $this->startDate && $matchDate <= $seasonEnd;
+        // Wenn explizites Enddatum gesetzt ist, prüfe gegen dieses
+        if ($this->endDate !== null) {
+            return $matchDate <= $this->endDate;
+        }
+        
+        // Für aktive Saisons ohne explizites Enddatum:
+        // Akzeptiere alle Matches ab Startdatum (Season ist offen)
+        if ($this->isActive) {
+            return true;
+        }
+        
+        // Für inaktive Saisons ohne explizites Enddatum:
+        // Verwende den letzten Tag des Startmonats als Grenze
+        $effectiveEndDate = new \DateTimeImmutable($this->startDate->format('Y-m-t 23:59:59'));
+        return $matchDate <= $effectiveEndDate;
     }
 
     /**

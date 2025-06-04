@@ -24,7 +24,21 @@
         "id": "player_682493ca1a3c7",
         "name": "zSinanProxGAMERhdLP",
         "nickname": null,
-        "avatar": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTc5MGI3NjExbDAwODR3bnVlOG5zMW90a2NoajllZTB3czcyam5ma2IwejEzdGtkayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\/l4jGvc7xVeDQWMt4ak\/giphy.gif",
+        "avatar": "https:\/\/media1.tenor.com\/m\/MQLBcEwnwKUAAAAd\/pooh-gangnam-style.gif",
         "createdAt": 1747227594
+    },
+    "player_68248673345da": {
+        "id": "player_68248673345da",
+        "name": "Unbekannter Spieler",
+        "nickname": null,
+        "avatar": null,
+        "createdAt": 1746446760
+    },
+    "player_683d6d2b3d32f": {
+        "id": "player_683d6d2b3d32f",
+        "name": "Domenic",
+        "nickname": "LeDoim",
+        "avatar": "https:\/\/www.icegif.com\/wp-content\/uploads\/2021\/11\/icegif-676.gif",
+        "createdAt": 1748856107
     }
 }
