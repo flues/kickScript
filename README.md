@@ -27,7 +27,7 @@ A comprehensive web-based system for managing a table football league, featuring
 - Full ELO rating system with goal difference modifier
 - Achievement system with [12 different rewards](.docs/achievements.md)
 - Extensive statistics and Chart.js visualizations
-- Table side tracking [(Blue vs. White)](.docs/feature-tischseiten-tracking.md) for fairness analysis
+- Table side tracking [(Blue vs. White)](.docs/feature-table-side-tracking.md) for fairness analysis
 - Season management with archiving functions
 - Responsive dark-theme UI with Bootstrap 5
 - Modern video background design
@@ -65,8 +65,8 @@ http://localhost:1337
 
 ### 🏗️ Architecture & Basics
 - **[project.md](.docs/project.md)** - Main project documentation with feature overview
-- **[architektur.md](.docs/architektur.md)** - Slim Framework 4 architecture and design patterns
-- **[datenmodell.md](.docs/datenmodell.md)** - JSON-based data storage concept
+- **[architecture.md](.docs/architecture.md)** - Slim Framework 4 architecture and design patterns
+- **[data-model.md](.docs/data-model.md)** - JSON-based data storage concept
 - **[installation.md](.docs/installation.md)** - Step-by-step installation guide
 
 ### ⚡ Core Features
@@ -77,15 +77,15 @@ http://localhost:1337
   *Revolutionary data architecture: All player, season, and achievement data are exclusively calculated from `matches.json`. Eliminates data inconsistencies and enables easy deletion of matches with automatic recalculation of all dependent data.*
 
 ### 🔥 Advanced Features
-- **[feature-tischseiten-tracking.md](.docs/feature-tischseiten-tracking.md)** - Complete table side tracking (**FULLY IMPLEMENTED**)
+- **[feature-table-side-tracking.md](.docs/feature-table-side-tracking.md)** - Complete table side tracking (**FULLY IMPLEMENTED**)
 
   *Comprehensive system for recording and analyzing table side selection (Blue vs. White) with statistics, visualizations, and fairness analysis for all migrated matches.*
 
-- **[feature-achievements-elo-verlauf.md](.docs/feature-achievements-elo-verlauf.md)** - Achievement system with ELO history charts
+- **[feature-achievements-elo-history.md](.docs/feature-achievements-elo-history.md)** - Achievement system with ELO history charts
 
   *Interactive player profiles with automatic achievement assignment and Chart.js-based ELO development history.*
 
-- **[feature-coinflip-seitenwahl.md](.docs/feature-coinflip-seitenwahl.md)** - Coinflip system for fair side selection (**FULLY IMPLEMENTED**)
+- **[feature-coinflip-side-selection.md](.docs/feature-coinflip-side-selection.md)** - Coinflip system for fair side selection (**FULLY IMPLEMENTED**)
 
   *Interactive coinflip interface with animations for fair table side selection. Fully integrated into the match recording system with automatic side assignment.*
 
@@ -173,7 +173,7 @@ kickLiga/
 ### ✅ Completed Features
 - Core system: Player, match, and ELO management
 - [Achievement system](.docs/achievements.md): 12 different achievements
-- [Table side tracking](.docs/feature-tischseiten-tracking.md): Fully implemented and migrated
+- [Table side tracking](.docs/feature-table-side-tracking.md): Fully implemented and migrated
 - [Single Source of Truth](.docs/feature-single-source-of-truth.md): Revolutionary data architecture
 - Responsive UI: Dark theme with video backgrounds
 - Season management: With archiving and leaderboards
@@ -225,7 +225,7 @@ Ein umfassendes webbasiertes System zur Verwaltung einer Tischfußball-Liga mit 
 - **🔥 Vollständiges ELO-Rating-System** mit Tordifferenz-Modifikator
 - **🏆 Achievement-System** mit [12 verschiedenen Belohnungen](.docs/achievements.md)  
 - **📊 Umfassende Statistiken** und Chart.js-Visualisierungen
-- **⚖️ Tischseiten-Tracking** [(Blau vs. Weiß)](.docs/feature-tischseiten-tracking.md) für Fairness-Analysen
+- **⚖️ Tischseiten-Tracking** [(Blau vs. Weiß)](.docs/feature-table-side-tracking.md) für Fairness-Analysen
 - **🎯 Saisonverwaltung** mit Archivierungsfunktionen
 - **📱 Responsive Dark-Theme UI** mit Bootstrap 5
 - **🎥 Modernes Video-Background-Design**
@@ -264,8 +264,8 @@ http://localhost:1337
 
 ### 🏗️ Architektur & Grundlagen
 - **[project.md](.docs/project.md)** - Hauptprojektdokumentation mit Funktionsübersicht
-- **[architektur.md](.docs/architektur.md)** - Slim Framework 4 Architektur und Design Patterns
-- **[datenmodell.md](.docs/datenmodell.md)** - JSON-basiertes Datenspeicherungskonzept
+- **[architecture.md](.docs/architecture.md)** - Slim Framework 4 Architektur und Design Patterns
+- **[data-model.md](.docs/data-model.md)** - JSON-basiertes Datenspeicherungskonzept
 - **[installation.md](.docs/installation.md)** - Schritt-für-Schritt Installationsanleitung
 
 ### ⚡ Core Features
@@ -276,15 +276,15 @@ http://localhost:1337
   *Revolutionäre Datenarchitektur: Alle Spieler-, Saison- und Achievement-Daten werden ausschließlich aus `matches.json` berechnet. Eliminiert Dateninkonsistenzen und ermöglicht einfaches Löschen von Matches mit automatischer Neuberechnung aller abhängigen Daten.*
 
 ### 🔥 Erweiterte Features
-- **[feature-tischseiten-tracking.md](.docs/feature-tischseiten-tracking.md)** - Vollständiges Tischseiten-Tracking (✅ **KOMPLETT IMPLEMENTIERT**)
+- **[feature-table-side-tracking.md](.docs/feature-table-side-tracking.md)** - Vollständiges Tischseiten-Tracking (✅ **KOMPLETT IMPLEMENTIERT**)
   
   *Umfassendes System zur Erfassung und Analyse der Tischseitenwahl (Blau vs. Weiß) mit Statistiken, Visualisierungen und Fairness-Analysen für alle 8 migrierten Matches.*
 
-- **[feature-achievements-elo-verlauf.md](.docs/feature-achievements-elo-verlauf.md)** - Achievement-System mit ELO-Verlaufs-Diagrammen
+- **[feature-achievements-elo-history.md](.docs/feature-achievements-elo-history.md)** - Achievement-System mit ELO-Verlaufs-Diagrammen
   
   *Interaktive Spielerprofile mit automatischer Achievement-Vergabe und Chart.js-basierten ELO-Entwicklungsverläufen.*
 
-- **[feature-coinflip-seitenwahl.md](.docs/feature-coinflip-seitenwahl.md)** - Münzwurf-System für faire Seitenwahl (✅ **KOMPLETT IMPLEMENTIERT**)
+- **[feature-coinflip-side-selection.md](.docs/feature-coinflip-side-selection.md)** - Münzwurf-System für faire Seitenwahl (✅ **KOMPLETT IMPLEMENTIERT**)
   
   *Interaktives Münzwurf-Interface mit Animationen für faire Tischseitenwahl. Vollständig integriert in das Match-Erfassungssystem mit automatischer Seitenzuweisung.*
 
@@ -372,8 +372,8 @@ kickLiga/
 
 ### ✅ Abgeschlossene Features
 - **Core-System**: Spieler-, Match- und ELO-Verwaltung
-- **[Achievement-System](.docs/achievements.md)**: [12 verschiedene Achievements](.docs/feature-achievements-elo-verlauf.md)
-- **[Tischseiten-Tracking](.docs/feature-tischseiten-tracking.md)**: Vollständig implementiert und migriert
+- **[Achievement-System](.docs/achievements.md)**: [12 verschiedene Achievements](.docs/feature-achievements-elo-history.md)
+- **[Tischseiten-Tracking](.docs/feature-table-side-tracking.md)**: Vollständig implementiert und migriert
 - **[Single Source of Truth](.docs/feature-single-source-of-truth.md)**: Revolutionäre Datenarchitektur
 - **Responsive UI**: Dark Theme mit Video-Backgrounds
 - **Saisonverwaltung**: Mit Archivierung und Leaderboards
