@@ -53,8 +53,5 @@ yarn-error.log*
 # Uploaded files (falls User-Uploads implementiert werden)
 /kickLiga/uploads/
 
-# Cursor/VS Code specific
-.cursor-rules 
-
 # data files
 /kickLiga/data/
