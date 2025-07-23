@@ -1,20 +1,18 @@
 
 # 🏓 Kickerliga Management System
 
-## 📑 Table of Contents (English)
+## Table of Contents (English)
 - [Project Overview](#project-overview)
 - [Features](#features)
 - [Quick Start](#quick-start)
 - [Project Documentation](#project-documentation)
 - [Main Functions](#main-functions)
-- [Design & UX](#design--ux)
+- [Design-ux](#design-ux)
 - [Technical Details](#technical-details)
 - [Development Status](#development-status)
 - [Contributing](#contributing)
 - [License](#license)
 - [Links](#links)
-
----
 
 # 🏓 Project Overview
 
