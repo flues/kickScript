@@ -44,7 +44,7 @@ A comprehensive web-based system for managing a table football league, featuring
 ```powershell
 # Clone repository
 git clone [repository-url] kickerliga
-cd kickerliga
+cd kickLiga
 
 # Install dependencies
 composer install
@@ -242,7 +242,7 @@ Ein umfassendes webbasiertes System zur Verwaltung einer Tischfußball-Liga mit 
 ```bash
 # Repository klonen
 git clone [repository-url] kickerliga
-cd kickerliga
+cd kickLiga
 
 # Dependencies installieren
 composer install
