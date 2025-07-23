@@ -33,14 +33,16 @@ data/
 ├── players_meta.json     # 👤 Only metadata (name, avatar, nickname)
 ├── players_backup.json   # 💾 Backup of the old players.json
 └── seasons.json          # 🏆 Only season metadata (name, period, status)
+```
 
 ### Data Flow ✅ OPTIMIZED
 
-```
+
 matches.json (SINGLE SOURCE OF TRUTH)
        ↓
 ComputationService (memory-efficient with cache)
        ↓
+```
 ┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
 │   ELO Rating    │   Statistics    │  Achievements   │ Season Tables   │
 │   - Calculation │   - Wins        │   - Streaks     │   - Standings   │
