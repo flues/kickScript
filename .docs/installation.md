@@ -26,7 +26,7 @@ This guide describes the quick installation of the Kickerliga Management System 
 ### 1. Clone the repository
 ```powershell
 git clone [repository-url] kickerliga
-cd kickerliga
+cd kickLiga
 ```
 
 ### 2. Install dependencies
@@ -263,7 +263,7 @@ Diese Anleitung beschreibt die schnelle Installation des Kickerliga Management S
 ### 1. Repository klonen
 ```bash
 git clone [repository-url] kickerliga
-cd kickerliga
+cd kickLiga
 ```
 
 ### 2. Dependencies installieren
