@@ -1,3 +1,251 @@
+# 🚀 Installation & Setup (English)
+
+This guide describes the quick installation of the Kickerliga Management System for local development and production use.
+
+## 📑 Table of Contents (English)
+- [System Requirements](#system-requirements)
+- [Quickstart (Local Development)](#quickstart-local-development)
+- [Production Setup](#production-setup)
+- [Advanced Configuration](#advanced-configuration)
+- [Verify Installation](#verify-installation)
+- [Troubleshooting](#troubleshooting)
+- [Security Notes](#security-notes)
+- [Update Instructions](#update-instructions)
+- [Support](#support)
+
+## 📋 System Requirements
+
+- **PHP 7.4 or higher** with CLI access
+- **Composer** (for dependency management)
+- **Web server** with PHP support (Apache/Nginx) or PHP built-in server
+- **mod_rewrite** (for Apache) or URL rewriting functionality
+- **Modern browsers** with JavaScript support
+
+## ⚡ Quickstart (Local Development)
+
+### 1. Clone the repository
+```powershell
+git clone [repository-url] kickerliga
+cd kickerliga
+```
+
+### 2. Install dependencies
+```powershell
+composer install
+```
+
+### 3. Set directory permissions
+```powershell
+# Windows (PowerShell as Administrator)
+icacls data /grant Everyone:F /T
+icacls logs /grant Everyone:F /T
+# Linux/macOS
+chmod -R 775 data/
+chmod -R 775 logs/
+```
+
+### 4. Start local server
+```powershell
+# PHP built-in server (easiest method)
+php -S localhost:1337 -t public
+
+# Alternative: With specific IP
+php -S 192.168.1.100:1337 -t public
+```
+
+### 5. Open in browser
+```
+http://localhost:1337
+```
+
+✅ **That's it!** The system is ready to use.
+
+## 🌐 Production Setup
+
+### Web Server Configuration
+
+#### Apache
+Create a `.htaccess` file in the `public/` directory:
+```apache
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+# Protect sensitive directories
+<IfModule mod_rewrite.c>
+    RewriteRule ^data/ - [F,L]
+    RewriteRule ^logs/ - [F,L]
+    RewriteRule ^\.docs/ - [F,L]
+</IfModule>
+```
+
+#### Nginx
+```nginx
+server {
+    listen 80;
+    server_name kickerliga.example.com;
+    root /var/www/kickerliga/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php8.0-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Deny access to data directories
+    location ~ ^/(data|logs|\.docs)/ {
+        deny all;
+        return 403;
+    }
+}
+```
+
+### Virtual Host Setup
+```powershell
+# Document Root should point to the 'public' directory
+DocumentRoot /var/www/kickerliga/public
+```
+
+## 🔧 Advanced Configuration
+
+### Environment Settings (Optional)
+Create a `.env` file in the project root:
+```env
+APP_ENV=development
+APP_DEBUG=true
+APP_NAME="Kickerliga Management"
+LOG_LEVEL=debug
+```
+
+### Log Configuration
+Logs are automatically saved in `logs/app.log`. For production:
+```powershell
+# Set up log rotation (Linux)
+sudo nano /etc/logrotate.d/kickerliga
+```
+
+## ✅ Verify Installation
+
+### Function Test
+1. **Load homepage**: Dashboard should be visible
+2. **Add player**: Test player management
+3. **Record match**: Create a test match
+4. **Check statistics**: ELO ratings should update
+
+### Debug Information
+- **Check logs**: `tail -f logs/app.log`
+- **PHP errors**: Browser developer tools → Console
+- **Permissions**: `ls -la data/` should show write access
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### 🚫 500 Internal Server Error
+```powershell
+# Check permissions
+ls -la data/ logs/
+
+# Check PHP error log
+tail -f /var/log/php_errors.log
+
+# Test web server configuration
+php -S localhost:1337 -t public  # If this works, it's a web server issue
+```
+
+#### 📁 "Class not found" error
+```powershell
+# Regenerate autoloader
+composer dump-autoload
+
+# Reinstall dependencies
+rm -rf vendor/ composer.lock
+composer install
+```
+
+#### 💾 Data storage not working
+```powershell
+# Check and fix directory permissions
+sudo chown -R www-data:www-data data/ logs/
+chmod -R 775 data/ logs/
+```
+
+#### 🎨 Frontend issues
+- Clear browser cache (Ctrl+F5)
+- Check Network tab in browser developer tools
+- Check asset paths in `templates/layout.twig`
+
+### System Information
+```powershell
+# Check PHP version and modules
+php -v
+php -m | findstr "json curl mbstring"
+
+# Composer version
+composer --version
+
+# Available storage
+dir  # Disk space (Windows)
+df -h  # Disk space (Linux)
+free -h  # RAM (Linux)
+```
+
+## 🔐 Security Notes
+
+### Production Environment
+- **Disable error messages**: `APP_DEBUG=false` in `.env`
+- **Protect sensitive directories**: Restrict web access to `data/`, `logs/`, `.docs/`
+- **Use HTTPS**: Set up SSL certificate
+- **Set up backups**: Automatic backup of the `data/` directory
+
+### Access Control (Optional)
+```apache
+# Basic Auth for the entire application (.htaccess)
+AuthType Basic
+AuthName "Kickerliga Access"
+AuthUserFile /path/to/.htpasswd
+Require valid-user
+```
+
+## 🔄 Update Instructions
+
+```powershell
+# Update code
+git pull origin main
+
+# Update dependencies
+composer update
+
+# Clear cache (if present)
+del cache\* tmp\*
+rm -rf cache/* tmp/*  # Linux
+
+# Check permissions
+icacls data /grant Everyone:F /T
+icacls logs /grant Everyone:F /T
+chmod -R 775 data/ logs/  # Linux
+```
+
+## 📞 Support
+
+If you have problems:
+1. **Check logs**: `logs/app.log`
+2. **Documentation**: More details in `.docs/`
+3. **GitHub Issues**: [Repository Issues]
+4. **Debug mode**: `APP_DEBUG=true` for detailed error messages
+
+---
+
+**💡 Tip**: For first setup, the quickstart with PHP built-in server is sufficient. For production, a full-featured web server is recommended.
+
+---
 # 🚀 Installation und Setup
 
 Diese Anleitung beschreibt die schnelle Installation des Kickerliga Management Systems für lokale Entwicklung und Produktiveinsatz.
@@ -229,4 +477,4 @@ Bei Problemen:
 
 ---
 
-**💡 Tipp**: Für die erste Einrichtung reicht der Schnellstart mit PHP Built-in Server. Für Produktiveinsatz empfiehlt sich ein vollwertiger Webserver. 
+**💡 Tipp**: Für die erste Einrichtung reicht der Schnellstart mit PHP Built-in Server. Für Produktiveinsatz empfiehlt sich ein vollwertiger Webserver.
