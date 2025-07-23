@@ -1,43 +1,43 @@
-# ELO-Rating System (SSOT-Architektur)
+# ELO Rating System (SSOT Architecture)
 
-Dieses Dokument beschreibt die Implementierung des ELO-Ratingsystems für die Kickerliga nach der **Single Source of Truth** Umstellung.
+This document describes the implementation of the ELO rating system for the Kickerliga after the **Single Source of Truth** migration.
 
-## 🎯 SSOT-Prinzip für ELO-Ratings
+## 🏆 SSOT Principle for ELO Ratings
 
-Das ELO-System folgt dem **Single Source of Truth** Prinzip:
-- **Alle ELO-Ratings werden zur Laufzeit aus `matches.json` berechnet**
-- **Keine separate Speicherung** von ELO-Werten oder Historie
-- **Automatische Konsistenz** - ELO-Ratings sind immer korrekt
-- **Chronologische Berechnung** - ELO-Entwicklung wird Match für Match nachvollzogen
+The ELO system follows the **Single Source of Truth** principle:
+- **All ELO ratings are computed at runtime from `matches.json`**
+- **No separate storage** of ELO values or history
+- **Automatic consistency** - ELO ratings are always correct
+- **Chronological calculation** - ELO development is tracked match by match
 
-## 🧮 Grundprinzipien des ELO-Systems
+## 🤖 ELO System Principles
 
-Das ELO-System ist ein Bewertungssystem, das ursprünglich für Schach entwickelt wurde und nun für unsere Kicker-Liga angepasst wird. Die Kernprinzipien sind:
+The ELO system is a rating system originally developed for chess, now adapted for our foosball league. Core principles:
 
-1. Jeder Spieler hat eine Bewertungszahl (Rating)
-2. Die Änderung des Ratings nach einem Spiel basiert auf:
-   - Dem erwarteten Ergebnis (basierend auf der Differenz der Ratings)
-   - Dem tatsächlichen Ergebnis
-   - Einem Gewichtungsfaktor (K-Faktor)
-3. **Tordifferenz-Modifikator** für realistischere Bewertungen
+1. Each player has a rating number
+2. The rating change after a match is based on:
+   - The expected result (based on rating difference)
+   - The actual result
+   - A weighting factor (K-factor)
+3. **Goal difference modifier** for more realistic ratings
 
-## ⚙️ SSOT-Implementierung
+## ⚙️ SSOT Implementation
 
-### ComputationService - ELO-Engine
+### ComputationService - ELO Engine
 
-Alle ELO-Berechnungen finden im `ComputationService` statt:
+All ELO calculations are performed in the `ComputationService`:
 
 ```php
 class ComputationService
 {
     /**
-     * Berechnet das aktuelle ELO-Rating eines Spielers aus matches.json
+     * Computes the current ELO rating of a player from matches.json
      */
     public function computeCurrentEloRating(string $playerId, array $matches): int
     {
         $currentRating = self::DEFAULT_ELO_RATING; // 1000
         
-        // Chronologisch durch alle Matches gehen
+        // Chronologically process all matches
         foreach ($matches as $match) {
             $eloChange = $this->getEloChangeForMatch($playerId, $match);
             $currentRating += $eloChange;
@@ -47,14 +47,14 @@ class ComputationService
     }
     
     /**
-     * Berechnet die komplette ELO-Historie eines Spielers
+     * Computes the full ELO history of a player
      */
     public function computeEloHistory(string $playerId, array $matches): array
     {
         $history = [];
         $currentRating = self::DEFAULT_ELO_RATING;
         
-        // Startpunkt
+        // Start point
         $history[] = [
             'rating' => $currentRating,
             'change' => 0,
@@ -62,19 +62,19 @@ class ComputationService
             'reason' => 'initial'
         ];
         
-        // Chronologisch durch alle Matches
+        // Chronologically process all matches
         foreach ($matches as $match) {
             $eloChange = $this->getEloChangeForMatch($playerId, $match);
             $currentRating += $eloChange;
             
             $opponentId = $match['player1Id'] === $playerId ? $match['player2Id'] : $match['player1Id'];
-            $opponentName = $this->getPlayerMeta($opponentId)['name'] ?? 'Unbekannt';
+            $opponentName = $this->getPlayerMeta($opponentId)['name'] ?? 'Unknown';
             
             $history[] = [
                 'rating' => $currentRating,
                 'change' => $eloChange,
                 'timestamp' => $match['playedAt'],
-                'reason' => "Match gegen {$opponentName}"
+                'reason' => "Match vs. {$opponentName}"
             ];
         }
         
@@ -83,13 +83,13 @@ class ComputationService
 }
 ```
 
-### ELO-Berechnung zur Laufzeit
+### ELO Calculation at Runtime
 
-**ELO-Änderung pro Match:**
+**ELO Change per Match:**
 ```php
 private function getEloChangeForMatch(string $playerId, array $match): int
 {
-    // Bestimme Spieler-Position und Gegner
+    // Determine player position and opponent
     if ($match['player1Id'] === $playerId) {
         $playerScore = $match['scorePlayer1'];
         $opponentScore = $match['scorePlayer2'];
@@ -99,63 +99,63 @@ private function getEloChangeForMatch(string $playerId, array $match): int
         $opponentScore = $match['scorePlayer1'];
         $opponentId = $match['player1Id'];
     } else {
-        return 0; // Spieler nicht in diesem Match
+        return 0; // Player not in this match
     }
     
-    // Hole gespeicherte ELO-Änderung aus Match-Daten
+    // Get stored ELO change from match data
     if (isset($match['eloChange'])) {
         $eloChangeKey = $match['player1Id'] === $playerId ? 'player1' : 'player2';
         return $match['eloChange'][$eloChangeKey] ?? 0;
     }
     
-    // Fallback: Berechne ELO-Änderung (für alte Matches ohne gespeicherte Änderung)
+    // Fallback: Calculate ELO change (for old matches without stored change)
     return $this->calculateEloChange($playerId, $opponentId, $playerScore, $opponentScore, $match['playedAt']);
 }
 ```
 
-## 🔧 ELO-Berechnungslogik
+## 🔧 ELO Calculation Logic
 
-### Implementierungsdetails
+### Implementation Details
 
-**Startrating:** Neue Spieler beginnen mit einem Rating von **1000 Punkten**.
+**Starting Rating:** New players begin with a rating of **1000 points**.
 
-**Berechnung der ELO-Änderung:**
+**Calculation of ELO Change:**
 ```
-Neues Rating = Altes Rating + K * (Tatsächliches Ergebnis - Erwartetes Ergebnis)
-```
-
-Wobei:
-- **K-Faktor**: 32 (Standardgewichtung)
-- **Tatsächliches Ergebnis**: 1 für Sieg, 0 für Niederlage
-- **Erwartetes Ergebnis**: Berechnet basierend auf dem Ratingunterschied
-
-### Berechnung des erwarteten Ergebnisses
-
-```
-Erwartetes Ergebnis = 1 / (1 + 10^((GegnerRating - SpielerRating) / 400))
+New Rating = Old Rating + K * (Actual Result - Expected Result)
 ```
 
-Diese Formel gibt eine Wahrscheinlichkeit zwischen 0 und 1 zurück, die die Gewinnchance basierend auf den Ratings darstellt.
+Where:
+- **K-Factor**: 32 (Standard weighting)
+- **Actual Result**: 1 for win, 0 for loss
+- **Expected Result**: Calculated based on the rating difference
 
-### Tordifferenz-Modifikator
-
-Um die Tordifferenz im ELO-System zu berücksichtigen, implementieren wir einen Modifikator:
+### Calculation of Expected Result
 
 ```
-Modifizierter K-Faktor = K * (1 + log10(Tordifferenz) / 5)
+Expected Result = 1 / (1 + 10^((OpponentRating - PlayerRating) / 400))
 ```
 
-Für eine Tordifferenz von 1 ist der Modifikator 1.0, für:
-- Tordifferenz 5: K-Faktor * 1.14
-- Tordifferenz 10: K-Faktor * 1.2
+This formula returns a probability between 0 and 1, representing the chance of winning based on the ratings.
 
-Der modifizierte K-Faktor wird nach oben auf 48 begrenzt (bei sehr hohen Tordifferenzen).
+### Goal Difference Modifier
 
-## 💻 Code-Implementierung
+To account for the goal difference in the ELO system, we implement a modifier:
 
-### EloService - Berechnungslogik
+```
+Modified K-Factor = K * (1 + log10(GoalDifference) / 5)
+```
 
-Der `EloService` enthält die reine Berechnungslogik:
+For a goal difference of 1, the modifier is 1.0, for:
+- Goal difference 5: K-Factor * 1.14
+- Goal difference 10: K-Factor * 1.2
+
+The modified K-Factor is capped at 48 (for very high goal differences).
+
+## 💻 Code Implementation
+
+### EloService - Calculation Logic
+
+The `EloService` contains the pure calculation logic:
 
 ```php
 <?php
@@ -167,7 +167,7 @@ namespace App\Services;
 class EloService
 {
     private const DEFAULT_K_FACTOR = 32;
-    private const DEFAULT_RATING = 1000;  // Geändert von 1500 auf 1000
+    private const DEFAULT_RATING = 1000;  // Changed from 1500 to 1000
     private const MAX_K_FACTOR = 48;
 
     public function calculateNewRatings(
@@ -181,7 +181,7 @@ class EloService
         $kFactor = $this->getModifiedKFactor($goalDifference);
         
         $ratingChange = (int)round($kFactor * ($actualOutcome - $expectedOutcome));
-        return $ratingChange; // Nur die Änderung zurückgeben
+        return $ratingChange; // Only return the change
     }
     
     private function calculateExpectedOutcome(int $playerRating, int $opponentRating): float
@@ -208,14 +208,14 @@ class EloService
 }
 ```
 
-### Integration im ComputationService
+### Integration in ComputationService
 
 ```php
 class ComputationService
 {
     public function __construct(
         private DataService $dataService,
-        private EloService $eloService,  // ← EloService für Berechnungen
+        private EloService $eloService,  // ← EloService for calculations
         private ?LoggerInterface $logger = null
     ) {}
     
@@ -226,7 +226,7 @@ class ComputationService
         int $opponentScore, 
         int $timestamp
     ): int {
-        // Hole aktuelle Ratings zum Zeitpunkt des Matches
+        // Get current ratings at the time of the match
         $playerRating = $this->getEloRatingAtTime($playerId, $timestamp);
         $opponentRating = $this->getEloRatingAtTime($opponentId, $timestamp);
         
@@ -243,7 +243,7 @@ class ComputationService
 }
 ```
 
-## 🔄 Datenfluss für ELO-System
+## 🔄 Data Flow for ELO System
 
 ```
 matches.json (SINGLE SOURCE OF TRUTH)
@@ -251,22 +251,22 @@ matches.json (SINGLE SOURCE OF TRUTH)
 ComputationService::computeCurrentEloRating()
        ↓
 ┌─────────────────┬─────────────────┬─────────────────┐
-│ Chronologische  │ ELO-Berechnung  │ ELO-Historie    │
-│ Match-Analyse   │ pro Match       │ Aufbau          │
-│ - Sortierung    │ - EloService    │ - Zeitstempel   │
-│ - Filterung     │ - Tordifferenz  │ - Änderungen    │
-│ - Validierung   │ - K-Faktor      │ - Gründe        │
+│ Chronological   │ ELO Calculation │ ELO History     │
+│ Match Analysis  │ per Match      │ Construction    │
+│ - Sorting       │ - EloService   │ - Timestamp     │
+│ - Filtering      │ - Goal Difference│ - Changes      │
+│ - Validation    │ - K-Factor     │ - Reasons       │
 └─────────────────┴─────────────────┴─────────────────┘
        ↓
 Computed ELO Data → PlayerService → Controller → Templates
 ```
 
-## 📊 ELO-Historie (Zur Laufzeit berechnet)
+## 📊 ELO History (Calculated at Runtime)
 
-Für jeden Spieler wird eine ELO-Historie zur Laufzeit generiert:
+For each player, an ELO history is generated at runtime:
 
 ```php
-// Beispiel einer berechneten ELO-Historie
+// Example of a calculated ELO history
 [
     [
         'rating' => 1000,
@@ -278,26 +278,26 @@ Für jeden Spieler wird eine ELO-Historie zur Laufzeit generiert:
         'rating' => 1024,
         'change' => 24,
         'timestamp' => 1727123456,
-        'reason' => 'Match gegen Anna Schmidt'
+        'reason' => 'Match vs. Anna Schmidt'
     ],
     [
         'rating' => 1008,
         'change' => -16,
         'timestamp' => 1727200000,
-        'reason' => 'Match gegen Max Mustermann'
+        'reason' => 'Match vs. Max Mustermann'
     ]
 ]
 ```
 
-## 🎨 UI-Integration
+## 🎨 UI Integration
 
-Die ELO-Ratings werden an verschiedenen Stellen der Benutzeroberfläche angezeigt:
+The ELO ratings are displayed in various places in the user interface:
 
-### 1. Spielerprofil
+### 1. Player Profile
 ```php
 // Controller
 $player = $this->playerService->getPlayerById($playerId);
-$eloHistory = $player['eloHistory']; // Zur Laufzeit berechnet
+$eloHistory = $player['eloHistory']; // Calculated at runtime
 
 // Template - Chart.js Integration
 foreach ($eloHistory as $entry) {
@@ -308,74 +308,74 @@ foreach ($eloHistory as $entry) {
 }
 ```
 
-### 2. Rangliste
-- Sortierung nach aktuellem ELO-Rating (zur Laufzeit berechnet)
-- Live-Updates ohne separate Datenbank-Updates
+### 2. Leaderboard
+- Sorted by current ELO rating (calculated at runtime)
+- Live updates without separate database updates
 
-### 3. Match-Anzeige
-- Anzeige der ELO-Änderung nach jedem Spiel
-- Historische ELO-Werte zum Zeitpunkt des Matches
+### 3. Match Display
+- Display of ELO change after each game
+- Historical ELO values at the time of the match
 
-### 4. Statistiken
-- ELO-Entwicklung über Zeit
-- Vergleiche zwischen Spielern
-- Saisonale ELO-Analysen
+### 4. Statistics
+- ELO development over time
+- Comparisons between players
+- Seasonal ELO analyses
 
-## 🚀 Vorteile der SSOT-ELO-Architektur
+## 🚀 Advantages of the SSOT ELO Architecture
 
-### 1. Automatische Konsistenz
-- **Immer korrekt**: ELO-Ratings werden bei jedem Aufruf neu berechnet
-- **Keine Sync-Probleme**: Unmöglich, inkonsistente ELO-Werte zu haben
-- **Automatische Korrektur**: Änderungen in `matches.json` propagieren sofort
+### 1. Automatic Consistency
+- **Always correct**: ELO ratings are recalculated with every call
+- **No sync issues**: Impossible to have inconsistent ELO values
+- **Automatic correction**: Changes in `matches.json` propagate immediately
 
-### 2. Vollständige Nachvollziehbarkeit
-- **Transparenz**: Jede ELO-Änderung ist nachvollziehbar
-- **Debugging**: Einfache Fehlersuche bei ELO-Problemen
-- **Audit-Trail**: Komplette Historie aus einer Quelle
+### 2. Complete Traceability
+- **Transparency**: Every ELO change is traceable
+- **Debugging**: Easy troubleshooting of ELO issues
+- **Audit trail**: Complete history from a single source
 
 ### 3. Performance & Memory
-- **Lazy Loading**: ELO-Daten nur bei Bedarf berechnet
-- **Cache-Integration**: Nutzt ComputationService-Cache
-- **Memory-effizient**: Keine redundante Speicherung
+- **Lazy loading**: ELO data calculated only on demand
+- **Cache integration**: Uses ComputationService cache
+- **Memory-efficient**: No redundant storage
 
-### 4. Flexibilität
-- **ELO-Anpassungen**: Einfache Änderung der Berechnungslogik
-- **Historische Korrekturen**: Match-Korrekturen propagieren automatisch
-- **Neue Features**: Einfache Integration neuer ELO-Varianten
+### 4. Flexibility
+- **ELO adjustments**: Easy modification of calculation logic
+- **Historical corrections**: Match corrections propagate automatically
+- **New features**: Easy integration of new ELO variants
 
-## 🔧 Saisonale Anpassungen
+## 🔧 Seasonal Adjustments
 
-Am Ende einer Saison können ELO-Ratings angepasst werden:
+At the end of a season, ELO ratings can be adjusted:
 
 ```php
 class ComputationService
 {
     /**
-     * Berechnet Saison-Start-Rating basierend auf vorherigem Rating
+     * Calculates season start rating based on previous rating
      */
     public function calculateSeasonStartRating(int $previousRating): int
     {
-        // Regression zur Mitte: 50% des Unterschieds zu 1000
+        // Regression to the mean: 50% of the difference to 1000
         return 1000 + (int)(($previousRating - 1000) * 0.5);
     }
 }
 ```
 
-Diese Berechnung:
-1. Reduziert extreme Ratings
-2. Gibt Spielern mit niedrigeren Ratings die Chance aufzuholen
-3. Behält relative Unterschiede bei
+This calculation:
+1. Reduces extreme ratings
+2. Gives players with lower ratings a chance to catch up
+3. Maintains relative differences
 
-## 🔮 Erweiterungsmöglichkeiten
+## 🔮 Extension Possibilities
 
-### Neue ELO-Varianten
-- **Zeitbasierte Gewichtung**: Neuere Matches haben mehr Einfluss
-- **Saisonale K-Faktoren**: Verschiedene K-Faktoren pro Saison
-- **Skill-basierte Anpassungen**: Dynamische K-Faktoren basierend auf Spielstärke
+### New ELO Variants
+- **Time-based weighting**: Newer matches have more impact
+- **Seasonal K-factors**: Different K-factors per season
+- **Skill-based adjustments**: Dynamic K-factors based on skill level
 
 ### Advanced Analytics
 ```php
-// ELO-Volatilität berechnen
+// Calculate ELO volatility
 public function calculateEloVolatility(string $playerId): float
 {
     $eloHistory = $this->computeEloHistory($playerId, $matches);
@@ -383,7 +383,7 @@ public function calculateEloVolatility(string $playerId): float
     return $this->calculateStandardDeviation($changes);
 }
 
-// ELO-Momentum berechnen
+// Calculate ELO momentum
 public function calculateEloMomentum(string $playerId, int $lastNMatches = 5): float
 {
     $recentMatches = array_slice($matches, -$lastNMatches);
@@ -394,14 +394,14 @@ public function calculateEloMomentum(string $playerId, int $lastNMatches = 5): f
 
 ---
 
-## 📋 Zusammenfassung
+## 📋 Summary
 
-Das **SSOT-ELO-System** bietet:
+The **SSOT ELO System** offers:
 
-✅ **Automatische Konsistenz**: Immer korrekte ELO-Ratings  
-✅ **Vollständige Nachvollziehbarkeit**: Jede Änderung ist transparent  
-✅ **Performance**: Memory-effizient durch Lazy Loading  
-✅ **Flexibilität**: Einfache Anpassungen der Berechnungslogik  
-✅ **Wartbarkeit**: Zentrale ELO-Logik im ComputationService  
+✅ **Automatic consistency**: Always correct ELO ratings  
+✅ **Complete traceability**: Every change is transparent  
+✅ **Performance**: Memory-efficient through lazy loading  
+✅ **Flexibility**: Easy adjustments of calculation logic  
+✅ **Maintainability**: Central ELO logic in ComputationService  
 
-**Das ELO-System ist vollständig in die SSOT-Architektur integriert und zukunftssicher! 🎉** 
+**The ELO system is fully integrated into the SSOT architecture and is future-proof! 🎉**

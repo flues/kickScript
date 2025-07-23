@@ -1,82 +1,82 @@
-# Kickerliga Management System - Projektdokumentation (SSOT-Architektur)
+# Kickerliga Management System - Project Documentation (SSOT Architecture)
 
-Ein umfassendes webbasiertes System zur Verwaltung einer Tischfußball-Liga mit ELO-Rating und einem Achievement-System, basierend auf einer revolutionären **Single Source of Truth** Architektur.
+A comprehensive web-based system for managing a table football league with ELO rating and an achievement system, based on a revolutionary **Single Source of Truth** architecture.
 
-## 🎯 SSOT-Revolution
+## 🏆 SSOT Revolution
 
-Das System wurde 2024 vollständig auf eine **Single Source of Truth** Architektur umgestellt:
-- **Eine Wahrheitsquelle**: Alle Statistiken werden aus `matches.json` berechnet
-- **Automatische Konsistenz**: Unmöglich, inkonsistente Daten zu haben
-- **Memory-Effizienz**: Von 128MB+ auf <10MB reduziert
-- **Zukunftssicher**: Einfache Erweiterungen ohne Datenmigration
+The system was fully migrated to a **Single Source of Truth** architecture in 2024:
+- **One source of truth**: All statistics are computed from `matches.json`
+- **Automatic consistency**: Impossible to have inconsistent data
+- **Memory efficiency**: Reduced from 128MB+ to <10MB
+- **Future-proof**: Easy extensions without data migration
 
-## 🚀 Funktionsübersicht
+## 🚀 Feature Overview
 
-### 📊 Spielerverwaltung & Statistiken (SSOT-basiert)
-- **Spielerverwaltung** mit dynamischen ELO-Wertungen (zur Laufzeit berechnet)
-- **Live-Rangliste** basierend auf aktuellen ELO-Punkten aus `matches.json`
-- **Umfangreiche Spielerstatistiken** (Siege, Niederlagen, Tordifferenz) - alle computed
-- **Visuelle ELO-Entwicklung** über Zeit mit Chart.js (zur Laufzeit generiert)
-- **Tischseiten-Tracking** (Blau vs. Weiß) für Fairness-Analysen
+### 📊 Player Management & Statistics (SSOT-based)
+- **Player management** with dynamic ELO ratings (computed at runtime)
+- **Live leaderboard** based on current ELO points from `matches.json`
+- **Comprehensive player statistics** (wins, losses, goal difference) - all computed
+- **Visual ELO development** over time with Chart.js (generated at runtime)
+- **Table side tracking** (Blue vs. White) for fairness analysis
 
-### ⚽ Spielerfassung & Match-Management
-- Einfache Eingabe von 1-gegen-1 Spielen mit **Coinflip-Seitenwahl**
-- Automatische ELO-Berechnung nach jedem Spiel (gespeichert in `matches.json`)
-- Berücksichtigung der Tordifferenz in der ELO-Wertung
-- Vollständige Spielhistorie für alle Matches
-- **Match-Löschung** mit automatischer Neuberechnung aller Statistiken
+### ⚽ Match Recording & Management
+- Simple entry of 1-vs-1 matches with **coinflip side selection**
+- Automatic ELO calculation after each match (stored in `matches.json`)
+- Goal difference considered in ELO rating
+- Complete match history for all matches
+- **Match deletion** with automatic recalculation of all statistics
 
-### 🏆 Achievement-System (12 verschiedene Achievements)
-Automatische Vergabe von Achievements zur Laufzeit aus `matches.json`:
-- **🏆 Winning Streak (3/5)**: Siegesserien
-- **👑 Höchster Sieg**: Deutliche Siege (5+ Tore Differenz)
-- **⚽ Torschützenkönig**: Meiste erzielte Tore
-- **💀 Bad Keeper**: Meiste Gegentore
-- **⭐ Perfekte Bilanz**: 100% Siegquote
-- **🚀 Tormaschine**: Ø 8+ Tore/Spiel
-- **🛡️ Eiserne Abwehr**: Ø <3 Gegentore/Spiel
-- **😵 Unglücksrabe**: 0 Siege bei 5+ Spielen
-- **🎖️ Veteran**: 10+ absolvierte Spiele
-- **📈 Tordifferenz-König**: +15 Tordifferenz insgesamt
-- **⚖️ Ausgewogen**: Gleiche Anzahl Tore/Gegentore
+### 🏆 Achievement System (12 different achievements)
+Automatic awarding of achievements at runtime from `matches.json`:
+- **🏆 Winning Streak (3/5)**: Winning streaks
+- **👑 Highest Victory**: Clear victories (5+ goal difference)
+- **⚽ Top Scorer**: Most goals scored
+- **💀 Bad Keeper**: Most goals conceded
+- **⭐ Perfect Record**: 100% win rate
+- **🚀 Goal Machine**: Avg. 8+ goals/match
+- **🛡️ Iron Defense**: Avg. <3 goals conceded/match
+- **😵 Unlucky**: 0 wins in 5+ matches
+- **🎖️ Veteran**: 10+ matches played
+- **📈 Goal Difference King**: +15 total goal difference
+- **⚖️ Balanced**: Equal number of goals/conceded
 
-### 🔄 Saisonverwaltung (SSOT-optimiert)
-- Saisonale Metadaten-Verwaltung in `seasons.json`
-- **Live-Berechnung** aller Saison-Statistiken aus `matches.json`
-- Saisonübergreifende Statistiken und Vergleiche
-- Automatische Saison-Tabellen ohne redundante Datenhaltung
+### 🔄 Season Management (SSOT-optimized)
+- Seasonal metadata management in `seasons.json`
+- **Live calculation** of all season statistics from `matches.json`
+- Cross-season statistics and comparisons
+- Automatic season tables without redundant data storage
 
-## 💻 Technische Details
+## 💻 Technical Details
 
-### Systemanforderungen
-- PHP 7.4 oder höher
-- Webserver (Apache/Nginx)
-- Moderne Browser mit JavaScript-Unterstützung
-- Sollte ohne spezielle Compiler o.Ä. betriebsbereit sein beim einfachen Hochladen auf den Webserver
+### System Requirements
+- PHP 7.4 or higher
+- Web server (Apache/Nginx)
+- Modern browsers with JavaScript support
+- Should run without special compilers etc. by simply uploading to the web server
 
-### SSOT-Architektur
-- **Backend**: Slim PHP Framework (Version 4) mit revolutionärer SSOT-Architektur
-- **Frontend**: Bootstrap 5 in einem dunklen Design ähnlich Spotify oder Discord mit Gradienten
-- **Datenspeicherung**: JSON-basiert mit **Single Source of Truth** Prinzip
-- **Grafiken**: Chart.js für dynamische Datenvisualisierung (ELO-Verläufe zur Laufzeit)
-- **Icons**: Phosphor Icons für visuelles Feedback und Badges
+### SSOT Architecture
+- **Backend**: Slim PHP Framework (Version 4) with revolutionary SSOT architecture
+- **Frontend**: Bootstrap 5 in a dark design similar to Spotify or Discord with gradients
+- **Data storage**: JSON-based with **Single Source of Truth** principle
+- **Graphics**: Chart.js for dynamic data visualization (ELO history at runtime)
+- **Icons**: Phosphor Icons for visual feedback and badges
 
-### ELO-System (SSOT-optimiert)
-- **Startrating**: 1000 Punkte für neue Spieler (geändert von 1500)
-- **K-Faktor**: 32 (Standardgewichtung für ELO-Berechnung)
-- **Tordifferenz-Modifikator**: Zusätzliche Punkte für deutliche Siege
-- **Live-Berechnung**: ELO-Ratings werden zur Laufzeit aus `matches.json` berechnet
-- **ELO-Historie**: Vollständige Entwicklung chronologisch rekonstruiert
+### ELO System (SSOT-optimized)
+- **Starting rating**: 1000 points for new players (changed from 1500)
+- **K-factor**: 32 (standard weighting for ELO calculation)
+- **Goal difference modifier**: Extra points for clear victories
+- **Live calculation**: ELO ratings are computed at runtime from `matches.json`
+- **ELO history**: Full development chronologically reconstructed
 
-### SSOT-Datenspeicherung
-- **`matches.json`**: 📊 **SINGLE SOURCE OF TRUTH** - Alle Spieldaten
-- **`players_meta.json`**: 👤 Nur Metadaten (Name, Avatar, Nickname)
-- **`seasons.json`**: 🏆 Nur Saison-Metadaten (Name, Zeitraum, Status)
-- **`players_backup.json`**: 💾 Migration Backup der alten Struktur
-- Geschützte Dateistruktur via .htaccess
-- Logging-System für Fehler und wichtige Ereignisse
+### SSOT Data Storage
+- **`matches.json`**: 📊 **SINGLE SOURCE OF TRUTH** - All match data
+- **`players_meta.json`**: 👤 Only metadata (name, avatar, nickname)
+- **`seasons.json`**: 🏆 Only season metadata (name, period, status)
+- **`players_backup.json`**: 💾 Migration backup of the old structure
+- Protected file structure via .htaccess
+- Logging system for errors and important events
 
-## 🏗️ SSOT-Projektstruktur
+## 🏗️ SSOT Project Structure
 
 Das Projekt folgt dem MVC-Muster mit revolutionärer SSOT-Architektur:
 
@@ -234,4 +234,4 @@ Das **Kickerliga Management System** mit SSOT-Architektur bietet:
 ✅ **Dark Theme**: Modernes, responsives Design  
 ✅ **Zukunftssicher**: Einfache Erweiterungen ohne Datenmigration  
 
-**Das System ist produktionsbereit und revolutioniert die Datenhaltung! 🎉** 
+**Das System ist produktionsbereit und revolutioniert die Datenhaltung! 🎉**

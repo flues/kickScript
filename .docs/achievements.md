@@ -1,58 +1,55 @@
-# Achievement-System (SSOT-Architektur)
+# Achievement System (SSOT Architecture)
 
-Dieses Dokument beschreibt das Achievement-System der Kickerliga nach der **Single Source of Truth** Umstellung, das Spielern automatisch besondere Auszeichnungen für verschiedene Leistungen verleiht.
+This document describes the achievement system of the Kickerliga after the **Single Source of Truth** migration, which automatically awards players for various accomplishments.
 
-## 🎯 SSOT-Prinzip für Achievements
+## 🏆 SSOT Principle for Achievements
 
-Das Achievement-System folgt dem **Single Source of Truth** Prinzip:
-- **Alle Achievements werden zur Laufzeit aus `matches.json` berechnet**
-- **Keine separate Speicherung** von Achievement-Daten
-- **Automatische Konsistenz** - Achievements sind immer aktuell
-- **Einfache Erweiterung** - neue Achievements ohne Datenmigration
+The achievement system follows the **Single Source of Truth** principle:
+- **All achievements are computed at runtime from `matches.json`**
+- **No separate storage** of achievement data
+- **Automatic consistency** - achievements are always up to date
+- **Easy extension** - new achievements without data migration
 
-## 🏆 Arten von Achievements
+## 🏅 Types of Achievements
 
-Basierend auf der aktuellen Implementierung gibt es **12 verschiedene Achievement-Typen**:
+Based on the current implementation, there are **12 different achievement types**:
 
-| Badge | Name | Beschreibung | Bedingung |
-|-------|------|--------------|-----------|
-| 🏆 | Winning Streak (3) | Siegesserie | 3 Siege in Folge |
-| 🔥 | Winning Streak (5) | Große Siegesserie | 5 Siege in Folge |
-| 👑 | Höchster Sieg | Deutlicher Sieg | 5+ Tore Differenz in einem Spiel |
-| 💀 | Bad Keeper | Schwache Defensive | Meiste Gegentore (relativ) |
-| ⚽ | Torschützenkönig | Offensivstärke | Meiste erzielte Tore (relativ) |
-| ⭐ | Perfekte Bilanz | Nur Siege | 100% Siegquote (min. 3 Spiele) |
-| 🚀 | Tormaschine | Treffsicherheit | Ø 8+ Tore/Spiel (min. 3 Spiele) |
-| 🛡️ | Eiserne Abwehr | Starke Defensive | Ø <3 Gegentore/Spiel (min. 3 Spiele) |
-| 😵 | Unglücksrabe | Pechsträhne | 0 Siege bei 5+ Spielen |
-| 🎖️ | Veteran | Erfahrung | 10+ absolvierte Spiele |
-| 📈 | Tordifferenz-König | Dominanz | +15 Tordifferenz insgesamt |
-| ⚖️ | Ausgewogen | Balance | Gleiche Anzahl Tore/Gegentore (min. 5 Spiele) |
+| Badge | Name | Description | Condition |
+|-------|------|-------------|-----------|
+| 🏆 | Winning Streak (3) | Winning streak | 3 wins in a row |
+| 🔥 | Winning Streak (5) | Big winning streak | 5 wins in a row |
+| 👑 | Highest Victory | Clear victory | 5+ goal difference in a match |
+| 💀 | Bad Keeper | Weak defense | Most goals conceded (relative) |
+| ⚽ | Top Scorer | Offensive strength | Most goals scored (relative) |
+| ⭐ | Perfect Record | Only wins | 100% win rate (min. 3 matches) |
+| 🚀 | Goal Machine | Accuracy | Avg. 8+ goals/match (min. 3 matches) |
+| 🛡️ | Iron Defense | Strong defense | Avg. <3 goals conceded/match (min. 3 matches) |
+| 😵 | Unlucky | Losing streak | 0 wins in 5+ matches |
+| 🎖️ | Veteran | Experience | 10+ matches played |
+| 📈 | Goal Difference King | Dominance | +15 total goal difference |
+| ⚖️ | Balanced | Balance | Equal number of goals/conceded (min. 5 matches) |
 
-## ⚙️ SSOT-Implementierung
+## ⚙️ SSOT Implementation
 
-### ComputationService - Achievement-Engine
+### ComputationService - Achievement Engine
 
-Alle Achievements werden im `ComputationService` berechnet:
+All achievements are computed in the `ComputationService`:
 
 ```php
 class ComputationService
 {
     /**
-     * Berechnet alle Achievements für einen Spieler aus matches.json
+     * Computes all achievements for a player from matches.json
      */
     public function computePlayerAchievements(string $playerId, array $matches): array
     {
         $achievements = [];
-        
         if (empty($matches)) {
             return $achievements;
         }
-        
-        // Berechne Statistiken für Achievement-Checks
+        // Compute statistics for achievement checks
         $stats = $this->computePlayerStatistics($playerId, $matches);
-        
-        // Prüfe alle Achievement-Typen
+        // Check all achievement types
         $achievements = array_merge(
             $achievements,
             $this->checkWinningStreakAchievements($playerId, $matches),
@@ -60,13 +57,12 @@ class ComputationService
             $this->checkStatisticalAchievements($playerId, $stats, $matches),
             $this->checkRelativeAchievements($playerId, $stats)
         );
-        
         return $achievements;
     }
 }
 ```
 
-### Achievement-Berechnung zur Laufzeit
+### Achievement Calculation at Runtime
 
 **Winning Streak Achievements:**
 ```php
@@ -92,7 +88,7 @@ private function checkWinningStreakAchievements(string $playerId, array $matches
         $achievements[] = [
             'id' => 'winning_streak_3',
             'name' => '🏆 Winning Streak (3)',
-            'description' => '3 Siege in Folge',
+            'description' => '3 wins in a row',
             'unlockedAt' => $this->findStreakUnlockTime($playerId, $matches, 3)
         ];
     }
@@ -102,7 +98,7 @@ private function checkWinningStreakAchievements(string $playerId, array $matches
         $achievements[] = [
             'id' => 'winning_streak_5',
             'name' => '🔥 Winning Streak (5)',
-            'description' => '5 Siege in Folge',
+            'description' => '5 wins in a row',
             'unlockedAt' => $this->findStreakUnlockTime($playerId, $matches, 5)
         ];
     }
@@ -111,7 +107,7 @@ private function checkWinningStreakAchievements(string $playerId, array $matches
 }
 ```
 
-**Statistische Achievements:**
+**Statistical Achievements:**
 ```php
 private function checkStatisticalAchievements(string $playerId, array $stats, array $matches): array
 {
@@ -307,4 +303,4 @@ Das **SSOT-Achievement-System** bietet:
 ✅ **Wartbarkeit**: Alle Logik zentral im ComputationService  
 ✅ **Flexibilität**: Einfache Anpassung von Bedingungen  
 
-**Das Achievement-System ist vollständig in die SSOT-Architektur integriert und zukunftssicher! 🎉** 
+**Das Achievement-System ist vollständig in die SSOT-Architektur integriert und zukunftssicher! 🎉**
