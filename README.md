@@ -1,5 +1,5 @@
 
-# 🏓 Kickerliga Management System
+# Kickerliga Management System
 
 ## Table of Contents (English)
 - [Project Overview](#project-overview)
@@ -22,7 +22,7 @@ A comprehensive web-based system for managing a table football league, featuring
 
 ![Kickerliga Management System](/kickLiga/public/assets/img/preview.png)
 
-## 🌟 Features
+## Features
 
 - Full ELO rating system with goal difference modifier
 - Achievement system with [12 different rewards](.docs/achievements.md)
@@ -33,7 +33,7 @@ A comprehensive web-based system for managing a table football league, featuring
 - Modern video background design
 - Performance optimized with PSR-4 autoloading
 
-## 🚀 Quick Start
+## Quick Start
 
 ### System Requirements
 - PHP 7.4 or higher
@@ -61,7 +61,7 @@ http://localhost:1337
 
 **👉 Detailed installation guide: [installation.md](.docs/installation.md)**
 
-## 📚 Project Documentation
+## Project Documentation
 
 ### 🏗️ Architecture & Basics
 - **[project.md](.docs/project.md)** - Main project documentation with feature overview
@@ -89,7 +89,7 @@ http://localhost:1337
 
   *Interactive coinflip interface with animations for fair table side selection. Fully integrated into the match recording system with automatic side assignment.*
 
-## 🎮 Main Functions
+## Main Functions
 
 ### 👥 Player Management
 - Complete CRUD operations for players
@@ -115,7 +115,7 @@ http://localhost:1337
 - Cross-season statistics
 - Leaderboard functions
 
-## 🎨 Design & UX
+## Design-ux
 
 ### 🌙 Dark Theme
 - Fully responsive Bootstrap 5 dark theme
@@ -132,7 +132,7 @@ http://localhost:1337
 - Touch-optimized operation
 - Flexible grid layouts
 
-## 🛠️ Technical Details
+## Technical Details
 
 ### Framework & Dependencies
 - **Backend**: Slim Framework 4.x with PSR-4 autoloading
@@ -168,7 +168,7 @@ kickLiga/
 └── .docs/               # Feature Documentation
 ```
 
-## 🚀 Development Status
+## Development Status
 
 ### ✅ Completed Features
 - Core system: Player, match, and ELO management
@@ -188,7 +188,7 @@ kickLiga/
 - Email notifications
 - Advanced analytics dashboard
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -196,11 +196,11 @@ kickLiga/
 4. Push the branch (`git push origin feature/amazing-feature`)
 5. Open a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-## 🔗 Links
+## Links
 
 - **Project documentation**: [.docs/](.docs/)
 - **Live demo**: [https://kick.flues.dev](https://kick.flues.dev)
