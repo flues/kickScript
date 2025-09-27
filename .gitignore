@@ -55,3 +55,6 @@ yarn-error.log*
 
 # data files
 /kickLiga/data/
+
+# Repository root environment file
+.env
