@@ -42,6 +42,9 @@ class HomeController
      */
     public function home(Request $request, Response $response): Response
     {
+        // Try to lazily spawn the daily analysis worker once per day.
+        $this->maybeSpawnDailyAnalysis();
+
         // Hole die Top-Spieler und die Gesamtzahl der Spieler
         $topPlayers = $this->playerService->getTopPlayers(5);
         $allPlayers = $this->playerService->getAllPlayers();
@@ -116,7 +119,83 @@ class HomeController
             'seasonCount' => $seasonCount,
             'seasonStandings' => $seasonStandings,
             'seasonStatistics' => $seasonStatistics
+            , 'aiSummary' => $this->loadAiSummary()
         ]);
+    }
+
+    private function loadAiSummary(): ?string
+    {
+        $file = __DIR__ . '/../../data/ai_summary.txt';
+        if (file_exists($file)) {
+            $content = trim(file_get_contents($file));
+            return $content === '' ? null : $content;
+        }
+        return null;
+    }
+
+    /**
+     * Lazily spawn the daily analysis script once per 24 hours when a visitor arrives.
+     * Uses a timestamp file and a lockfile to avoid race conditions.
+     */
+    private function maybeSpawnDailyAnalysis(): void
+    {
+        // Do not spawn if there is no API key configured
+        $apiKey = getenv('GEMINI_API_KEY') ?: ($_ENV['GEMINI_API_KEY'] ?? null);
+        if (empty($apiKey)) {
+            return;
+        }
+
+        $root = dirname(__DIR__, 3);
+        $dataDir = $root . '/kickLiga/data';
+        if (!is_dir($dataDir)) {
+            @mkdir($dataDir, 0755, true);
+        }
+
+        $stampFile = $dataDir . '/ai_summary_generated_at';
+        $lockFile = $dataDir . '/ai_summary_spawn.lock';
+        $now = time();
+
+        // If stamp exists and was updated within last 24h -> nothing to do
+        if (is_file($stampFile) && ($now - (int) @file_get_contents($stampFile)) < 86400) {
+            return;
+        }
+
+        // Acquire a non-blocking lock using a small lock file
+        $fp = @fopen($lockFile, 'c');
+        if ($fp === false) {
+            return; // cannot lock -> skip
+        }
+
+        if (!flock($fp, LOCK_EX | LOCK_NB)) {
+            // Another request is already spawning
+            fclose($fp);
+            return;
+        }
+
+        try {
+            // Update stamp immediately to prevent other requests starting new spawns
+            @file_put_contents($stampFile, (string)$now, LOCK_EX);
+
+            $bin = $root . '/bin/daily-analysis.php';
+            if (!file_exists($bin)) {
+                return;
+            }
+
+            // Platform-specific non-blocking spawn
+            if (stripos(PHP_OS, 'WIN') === 0) {
+                // Windows: use 'start /B' to detach (runs via cmd)
+                $cmd = 'cmd /c start /B php ' . escapeshellarg($bin);
+                pclose(popen($cmd, 'r'));
+            } else {
+                // Unix-like: background the process
+                $cmd = 'php ' . escapeshellarg($bin) . ' > /dev/null 2>&1 &';
+                exec($cmd);
+            }
+        } finally {
+            // Release lock
+            flock($fp, LOCK_UN);
+            fclose($fp);
+        }
     }
 
     /**

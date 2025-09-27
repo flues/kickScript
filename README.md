@@ -209,7 +209,52 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-**💡 Tip**: For a quick setup, start with [installation.md](.docs/installation.md), or explore the [feature documentation](.docs/) for deeper insights into specific functions.
+## Gemini AI Integration (Daily Summary)
+
+This project can produce a short daily AI summary of the league using Gemini. The integration expects an API key to be available at runtime as an environment variable.
+
+Where to place `.env`
+- Runtime (server): place your `.env` in `kickLiga/.env`. The application (and the scheduled runner) will prefer `kickLiga/.env` first when loading environment variables.
+- Development (optional): you may also keep a repo-root `.env` for local development convenience, but server runtime prioritizes `kickLiga/.env`.
+
+1. Create a `.env` file in `kickLiga/` (copy from `.env.example`) and add your Gemini API key:
+
+```
+GEMINI_API_KEY=your_real_api_key_here
+GEMINI_MODEL=gemini-2.0-flash
+APP_ENV=production
+```
+
+2. Do not commit `.env` — it is already listed in `.gitignore`.
+
+3. A CLI runner is provided at `bin/daily-analysis.php`. It computes season and player stats and calls Gemini to produce a 1-2 sentence summary. The summary is written to `kickLiga/data/ai_summary.txt` and shown at the top of the dashboard.
+
+4. Scheduling options
+
+- Recommended: configure a system scheduler (Cron on Linux, Task Scheduler on Windows) to run `bin/daily-analysis.php` daily.
+
+  Example (cron, daily at 06:00):
+
+  ```cron
+  0 6 * * * /usr/bin/php /path/to/repo/bin/daily-analysis.php >> /path/to/repo/kickLiga/logs/daily-analysis.log 2>&1
+  ```
+
+  Example (Windows Task Scheduler via PowerShell):
+
+  ```powershell
+  $Action = New-ScheduledTaskAction -Execute 'php' -Argument 'W:\kickScript\bin\daily-analysis.php'
+  $Trigger = New-ScheduledTaskTrigger -Daily -At 6:00AM
+  Register-ScheduledTask -TaskName "KickLigaDailyAnalysis" -Action $Action -Trigger $Trigger -User 'SYSTEM'
+  ```
+
+- Alternative: If you cannot configure a scheduler on the host, the app includes a "lazy trigger" that will run the analysis once per 24 hours when the first visitor arrives. This is implemented in `HomeController::maybeSpawnDailyAnalysis()` and uses a timestamp file (`kickLiga/data/ai_summary_generated_at`) and a lockfile to avoid race conditions. It requires `GEMINI_API_KEY` to be present in `kickLiga/.env`.
+
+Notes:
+- `vlucas/phpdotenv` is included in the project and `ContainerConfig` will load `.env` from `kickLiga/` first, then fall back to the repository root if present. A lightweight fallback parser is also present for environments where phpdotenv cannot be used.
+- The `GeminiService` uses a minimal cURL wrapper. If you prefer, switch to the official Google GenAI SDK for PHP for more robust auth and features.
+- The runner expects `vendor/` to be installed (run `composer install`) and `GEMINI_API_KEY` to be set in the environment or `kickLiga/.env`.
+
+Security tip: treat API keys as secrets. Do not commit `.env` to version control. Consider using a platform secret manager in production.
 
 ---
 # 🏓 Kickerliga Management System

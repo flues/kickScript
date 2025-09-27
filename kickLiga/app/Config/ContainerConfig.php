@@ -18,6 +18,7 @@ use App\Services\CoinflipService;
 use App\Services\ComputationService;
 use DI\Container;
 use DI\ContainerBuilder;
+use Dotenv\Dotenv;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -32,6 +33,71 @@ class ContainerConfig
      */
     public static function createContainer(): Container
     {
+        // Load environment variables from possible .env locations.
+        // Prefer the kickLiga directory, but also check the repository root (one level up).
+        $projectRoot = realpath(__DIR__ . '/../../'); // typically .../kickLiga
+        $candidatePaths = [];
+        if ($projectRoot && is_dir($projectRoot)) {
+            $candidatePaths[] = $projectRoot; // kickLiga/
+            $parent = realpath($projectRoot . '/..');
+            if ($parent && is_dir($parent)) {
+                $candidatePaths[] = $parent; // repo root (one level up)
+            }
+        }
+
+        foreach ($candidatePaths as $envPath) {
+            $envFile = $envPath . '/.env';
+            if (!file_exists($envFile)) {
+                continue;
+            }
+
+            // Prefer vlucas/phpdotenv if available
+            if (class_exists(\Dotenv\Dotenv::class)) {
+                try {
+                    $dotenv = \Dotenv\Dotenv::createImmutable($envPath);
+                    $dotenv->load();
+                    // stop after first successful load
+                    break;
+                } catch (\Throwable $e) {
+                    // If dotenv cannot be loaded from this path, continue to next
+                    continue;
+                }
+            }
+
+            // Fallback: simple parser if phpdotenv isn't installed
+            try {
+                $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if ($line === '' || str_starts_with($line, '#')) {
+                        continue;
+                    }
+
+                    // Split at first '='
+                    $parts = explode('=', $line, 2);
+                    if (count($parts) !== 2) {
+                        continue;
+                    }
+
+                    $key = trim($parts[0]);
+                    $value = trim($parts[1]);
+                    // Remove surrounding quotes
+                    if ((str_starts_with($value, '"') && str_ends_with($value, '"')) || (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
+                        $value = substr($value, 1, -1);
+                    }
+
+                    putenv("{$key}={$value}");
+                    $_ENV[$key] = $value;
+                    $_SERVER[$key] = $value;
+                }
+                // stop after first successful parse
+                break;
+            } catch (\Throwable $e) {
+                // ignore and continue to next candidate
+                continue;
+            }
+        }
+
         $builder = new ContainerBuilder();
         
         // Definiere alle Container-Definitionen
@@ -119,6 +185,12 @@ class ContainerConfig
             // CoinflipService
             CoinflipService::class => function () {
                 return new CoinflipService();
+            },
+
+            // Gemini AI Service
+            \App\Services\GeminiService::class => function (Container $container) {
+                $apiKey = getenv('GEMINI_API_KEY') ?: null;
+                return new \App\Services\GeminiService($apiKey, $container->get(LoggerInterface::class));
             },
             
             // Twig View

@@ -22,6 +22,16 @@
             </div>
         </div>
     </div>
+    {% if aiSummary %}
+    <div class="row mb-3">
+        <div class="col-md-12">
+                <div class="alert alert-info text-white" role="alert">
+                <strong>AI Summary:</strong>
+                <div class="mt-2">{{ aiSummary|e|nl2br|raw }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
     {% if activeSeason %}
     <div class="row mb-4">
