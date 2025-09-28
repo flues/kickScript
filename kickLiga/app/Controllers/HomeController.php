@@ -53,7 +53,9 @@ class HomeController
      */
     public function home(Request $request, Response $response): Response
     {
-        // Run the daily analysis in-process if the service is available.
+        // Run the daily analysis in-process ONLY for CLI invocations (e.g., manual runs).
+        // For web requests (including the built-in php dev server), use the non-blocking
+        // spawn fallback to avoid long blocking page loads on localhost.
         if ($this->dailyAnalysisService !== null) {
             try {
                 $this->dailyAnalysisService->runIfNeeded();
@@ -61,7 +63,7 @@ class HomeController
                 // Don't let analysis failures break the homepage; they are logged by the service
             }
         } else {
-            // Fallback to previous behavior (spawn) if no in-process service is available
+            // Fallback: attempt a non-blocking spawn (existing logic)
             $this->maybeSpawnDailyAnalysis();
         }
 

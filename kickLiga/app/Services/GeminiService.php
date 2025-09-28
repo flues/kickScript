@@ -115,7 +115,7 @@ class GeminiService
             $summaryParts[] = 'Recent matches: ' . $recentCount;
         }
 
-        // Prepare a short sample of match notes to let the model reference them.
+    // Prepare a short sample of match notes to let the model reference them.
         // We prefer notes from the larger 'full_matches_context' if provided, but
         // fall back to the 'recent_matches' entries.
         $notes = [];
@@ -162,6 +162,8 @@ WICHTIG: Die ELO‑Skala startet bei 1000 als Ausgangswert. Berücksichtige die 
 
 Optional: Verwende sparsam 1–4 Emojis zur optischen Hervorhebung (z. B. 🔥, 🏆, ⚠️, 📈). Du kannst kurze deutsche Zwischenüberschriften verwenden (z. B. "📊 Übersicht:", "🔥 Hot-Form:"), aber bleibe bei einfachem Text (keine HTML‑Tags).
 
+Style‑Erweiterung für Tischkicker: Verwende gelegentlich moderne, lockere Sprache und tischkicker bezogene jokes / wortwitze (z. B. das Thema "kurbeln"). Solche Sprüche sollen RAR sein — maximal 0–2 pro Text — und humorvoll, nicht beleidigend. Beispiele (nur zur Orientierung, soll nicht wortwörtlich zwingend verwendet werden): "hat bodenlos gekurbelt", "gottlose Kurblerei", "der König der Kurbel". Verwende diese Ausdrücke sehr sparsam und nur wenn sie kontextuell passen - aber auf keinen fall als einzelner satz stehen
+
 Gib nur reinen Fließtext zurück (kein JSON, keine Metadaten). Halte die Gesamtlänge dashboard‑freundlich.
 TXT;
 
@@ -171,11 +173,40 @@ TXT;
             $notesBlock = "Match notes (context, newest first):\n- " . implode("\n- ", $notes);
         }
 
+        // Build a strictly formatted block describing the single newest match so the model
+        // cannot misidentify which one is the latest. We prefer 'recent_matches' first.
+        $newestBlock = '';
+        $newest = null;
+        if (!empty($stats['recent_matches']) && is_array($stats['recent_matches'])) {
+            $newest = $stats['recent_matches'][0];
+        } elseif (!empty($stats['full_matches_context']) && is_array($stats['full_matches_context'])) {
+            $newest = $stats['full_matches_context'][0];
+        }
+
+        if (is_array($newest)) {
+            $nmPlayer1 = $newest['player1Name'] ?? ($newest['player1Id'] ?? 'P1');
+            $nmPlayer2 = $newest['player2Name'] ?? ($newest['player2Id'] ?? 'P2');
+            $nmScore = (isset($newest['scorePlayer1']) || isset($newest['scorePlayer2'])) ? (($newest['scorePlayer1'] ?? '') . ':' . ($newest['scorePlayer2'] ?? '')) : ($newest['score'] ?? '');
+            $nmDate = $newest['playedAt'] ?? ($newest['date'] ?? 'unbekannt');
+            $nmNotes = 'Keine Notizen.';
+            if (!empty($newest['notes'])) {
+                $nmNotes = trim($newest['notes']);
+            } elseif (!empty($newest['summary'])) {
+                $nmNotes = trim($newest['summary']);
+            }
+
+            $newestBlock = "NEUESTES_SPIEL:\nDate: " . $nmDate . "\nPlayers: " . $nmPlayer1 . " vs " . $nmPlayer2 . "\nScore: " . $nmScore . "\nNotes: " . $nmNotes . "\n";
+        } else {
+            $newestBlock = "NEUESTES_SPIEL:\nKein aktuelles Spiel im Kontext.\n";
+        }
+
         // Clarify to the model that it receives a larger context but should focus its
         // commentary on the most recent matches (the dashboard will display the most recent ones).
-        $focusInstruction = "Wichtig: Du erhältst einen größeren Kontext mit vielen jüngsten Spielen. Beziehe dich in deiner Ausgabe primär auf die aktuellsten Spiele und nenne explizit zumindest ein Beispiel aus den neuesten Matches. Nutze die übrigen Spiele als Hintergrundwissen.";
+    $focusInstruction = "Wichtig: Du erhältst einen größeren Kontext mit vielen jüngsten Spielen. Der erste Absatz MUSS sich ausdrücklich auf das hier eindeutig markierte 'NEUESTES_SPIEL' beziehen (siehe Block 'NEUESTES_SPIEL' weiter unten). Beziehe dich in deiner Ausgabe primär auf dieses aktuellste Spiel und nenne explizit Details daraus. Nutze die übrigen Spiele als Hintergrundwissen.";
 
-        $prompt = $instruction . "\n\n" . $focusInstruction . "\n\nDashboard-Daten: " . $body . "\n\n" . $notesBlock . "\n\nAntwort:";
+    // Assemble prompt: include the explicit newest match block so the model cannot
+    // mistake which match is the newest.
+    $prompt = $instruction . "\n\n" . $focusInstruction . "\n\nDashboard-Daten: " . $body . "\n\n" . $newestBlock . "\n" . $notesBlock . "\n\nAntwort:";
 
         return $prompt;
     }
