@@ -132,7 +132,14 @@ $statsPayload = [
     'full_matches_context' => $fullContext
 ];
 
-$summary = $gemini->analyzeLeagueSummary($statsPayload);
+try {
+    $summary = $gemini->analyzeLeagueSummary($statsPayload);
+} catch (\Throwable $e) {
+    $errFile = __DIR__ . '/../kickLiga/data/ai_summary_error.log';
+    $entry = '[' . date('c') . '] Exception in daily-analysis: ' . $e->getMessage() . PHP_EOL;
+    @file_put_contents($errFile, $entry, FILE_APPEND | LOCK_EX);
+    $summary = 'AI summary unavailable (exception)';
+}
 
 // Ensure data directory exists
 $dataDir = __DIR__ . '/../kickLiga/data';
@@ -141,5 +148,12 @@ if (!is_dir($dataDir)) {
 }
 
 file_put_contents($dataDir . '/ai_summary.txt', $summary);
+
+// If the summary looks suspicious (empty or placeholder), write a short debug line
+if (empty(trim((string)$summary)) || stripos((string)$summary, 'unavailable') !== false) {
+    $errFile = __DIR__ . '/../kickLiga/data/ai_summary_error.log';
+    $entry = '[' . date('c') . '] Generated empty or unavailable summary.' . PHP_EOL;
+    @file_put_contents($errFile, $entry, FILE_APPEND | LOCK_EX);
+}
 
 echo "AI summary written to {$dataDir}/ai_summary.txt\n";

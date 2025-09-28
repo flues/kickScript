@@ -19,6 +19,7 @@ class HomeController
     private PlayerService $playerService;
     private ?MatchService $matchService;
     private ?SeasonService $seasonService;
+    private ?\App\Services\DailyAnalysisService $dailyAnalysisService = null;
 
     /**
      * Controller Konstruktor mit Dependency Injection
@@ -35,6 +36,16 @@ class HomeController
         $this->playerService = $playerService;
         $this->matchService = $matchService;
         $this->seasonService = $seasonService;
+        // DailyAnalysisService is optional; fetch from container if available
+        try {
+            // Delay loading to avoid adding a hard DI dependency; the ContainerConfig
+            // will inject HomeController via a factory that has access to the container.
+            // If the container provides DailyAnalysisService, set it here.
+            $container = \DI\Bridge\Pimple\container() ?? null;
+        } catch (\Throwable $e) {
+            $container = null;
+        }
+        // Note: we'll rely on ContainerConfig to set the service via setter if needed.
     }
 
     /**
@@ -42,8 +53,17 @@ class HomeController
      */
     public function home(Request $request, Response $response): Response
     {
-        // Try to lazily spawn the daily analysis worker once per day.
-        $this->maybeSpawnDailyAnalysis();
+        // Run the daily analysis in-process if the service is available.
+        if ($this->dailyAnalysisService !== null) {
+            try {
+                $this->dailyAnalysisService->runIfNeeded();
+            } catch (\Throwable $e) {
+                // Don't let analysis failures break the homepage; they are logged by the service
+            }
+        } else {
+            // Fallback to previous behavior (spawn) if no in-process service is available
+            $this->maybeSpawnDailyAnalysis();
+        }
 
         // Hole die Top-Spieler und die Gesamtzahl der Spieler
         $topPlayers = $this->playerService->getTopPlayers(5);
@@ -181,15 +201,35 @@ class HomeController
                 return;
             }
 
-            // Platform-specific non-blocking spawn
+            // Platform-specific non-blocking spawn. Use the same PHP binary that
+            // runs the current process (PHP_BINARY) to avoid relying on 'php' in PATH.
+            $phpBinary = defined('PHP_BINARY') ? PHP_BINARY : 'php';
             if (stripos(PHP_OS, 'WIN') === 0) {
-                // Windows: use 'start /B' to detach (runs via cmd)
-                $cmd = 'cmd /c start /B php ' . escapeshellarg($bin);
-                pclose(popen($cmd, 'r'));
+                // Windows: start requires a title argument; provide empty title "".
+                // Use cmd /c start "" /B <php> <script>
+                $cmd = 'cmd /c start "" /B ' . escapeshellarg($phpBinary) . ' ' . escapeshellarg($bin);
             } else {
-                // Unix-like: background the process
-                $cmd = 'php ' . escapeshellarg($bin) . ' > /dev/null 2>&1 &';
-                exec($cmd);
+                // Unix-like: background the process, redirect output
+                $cmd = escapeshellarg($phpBinary) . ' ' . escapeshellarg($bin) . ' > /dev/null 2>&1 &';
+            }
+
+            // Write a short debug line so we can inspect the exact command and env on the live server.
+            try {
+                $debugFile = $dataDir . '/ai_spawn_debug.log';
+                $debug = '[' . date('c') . '] Spawn command: ' . $cmd . "\n";
+                $debug .= 'PHP_BINARY: ' . (defined('PHP_BINARY') ? PHP_BINARY : 'undefined') . "\n";
+                $debug .= 'CWD: ' . getcwd() . "\n";
+                $debug .= 'PATH: ' . (getenv('PATH') ?: getenv('Path') ?: '') . "\n";
+                @file_put_contents($debugFile, $debug, FILE_APPEND | LOCK_EX);
+            } catch (\Throwable $e) {
+                // ignore
+            }
+
+            // Execute spawn (non-blocking). Use appropriate call for platform.
+            if (stripos(PHP_OS, 'WIN') === 0) {
+                @pclose(popen($cmd, 'r'));
+            } else {
+                @exec($cmd);
             }
         } finally {
             // Release lock
@@ -219,5 +259,13 @@ class HomeController
             'originalData' => $testData,
             'readData' => $readData
         ]);
+    }
+
+    /**
+     * Optional setter for the DailyAnalysisService so the container factory can inject it.
+     */
+    public function setDailyAnalysisService(\App\Services\DailyAnalysisService $service): void
+    {
+        $this->dailyAnalysisService = $service;
     }
 } 

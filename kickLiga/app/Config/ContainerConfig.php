@@ -192,6 +192,16 @@ class ContainerConfig
                 $apiKey = getenv('GEMINI_API_KEY') ?: null;
                 return new \App\Services\GeminiService($apiKey, $container->get(LoggerInterface::class));
             },
+
+            // DailyAnalysisService (runs the AI analysis in-process)
+            \App\Services\DailyAnalysisService::class => function (Container $container) {
+                return new \App\Services\DailyAnalysisService(
+                    $container->get(ComputationService::class),
+                    $container->get(DataService::class),
+                    $container->get(\App\Services\GeminiService::class),
+                    $container->get(LoggerInterface::class)
+                );
+            },
             
             // Twig View
             'view' => function (Container $container) {
@@ -220,13 +230,23 @@ class ContainerConfig
                     $seasonService = $container->get(SeasonService::class);
                 }
                 
-                return new HomeController(
+                $controller = new HomeController(
                     $container->get('view'),
                     $container->get(DataService::class),
                     $container->get(PlayerService::class),
                     $matchService,
                     $seasonService
                 );
+
+                if ($container->has(\App\Services\DailyAnalysisService::class)) {
+                    try {
+                        $controller->setDailyAnalysisService($container->get(\App\Services\DailyAnalysisService::class));
+                    } catch (\Throwable $e) {
+                        // ignore injection failures
+                    }
+                }
+
+                return $controller;
             },
             
             PlayerController::class => function (Container $container) {
