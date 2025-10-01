@@ -182,9 +182,9 @@ class HomeController
                 return;
             }
 
-            // Platform-specific non-blocking spawn. Use the same PHP binary that
-            // runs the current process (PHP_BINARY) to avoid relying on 'php' in PATH.
-            $phpBinary = defined('PHP_BINARY') ? PHP_BINARY : 'php';
+            // Platform-specific non-blocking spawn. Find a usable PHP CLI binary.
+            // PHP_BINARY might point to php-fpm (FastCGI) which cannot run CLI scripts.
+            $phpBinary = $this->findPhpCliBinary();
             
             $debugFile = $dataDir . '/ai_spawn_debug.log';
             $debugInfo = [
@@ -266,6 +266,93 @@ class HomeController
             'originalData' => $testData,
             'readData' => $readData
         ]);
+    }
+
+    /**
+     * Find a usable PHP CLI binary for running background scripts.
+     * PHP_BINARY might point to php-fpm (FastCGI), which cannot execute CLI scripts.
+     * This method implements a robust fallback mechanism.
+     *
+     * @return string Path to PHP CLI binary
+     */
+    private function findPhpCliBinary(): string
+    {
+        // 1. Check if PHP_BINARY is usable (not php-fpm)
+        if (defined('PHP_BINARY') && !empty(PHP_BINARY)) {
+            $binary = PHP_BINARY;
+            
+            // Skip php-fpm variants (check for any occurrence of 'fpm' in path)
+            // Examples: php-fpm, php84-fpm, php8.4-fpm, phpfpm
+            if (stripos($binary, 'fpm') === false) {
+                // Verify it's executable
+                if (is_executable($binary)) {
+                    return $binary;
+                }
+            }
+        }
+
+        // 2. Try common PHP CLI binary names in PATH
+        $candidates = [
+            'php84',    // Version-specific binaries (newest first)
+            'php83',
+            'php82',
+            'php81',
+            'php80',
+            'php',      // Generic php binary
+        ];
+
+        foreach ($candidates as $cmd) {
+            // Use 'which' (Unix) or 'where' (Windows) to find binary in PATH
+            if (stripos(PHP_OS, 'WIN') === 0) {
+                // Windows: use 'where' command
+                $result = @shell_exec("where {$cmd} 2>NUL");
+                if (!empty($result)) {
+                    $lines = explode("\n", trim($result));
+                    $binary = trim($lines[0]); // Take first match
+                    if (is_executable($binary)) {
+                        return $binary;
+                    }
+                }
+            } else {
+                // Unix: use 'which' command
+                $binary = @shell_exec("which {$cmd} 2>/dev/null");
+                if (!empty($binary)) {
+                    $binary = trim($binary);
+                    if (is_executable($binary)) {
+                        return $binary;
+                    }
+                }
+            }
+        }
+
+        // 3. Try common installation paths (Linux)
+        if (stripos(PHP_OS, 'WIN') !== 0) {
+            $commonPaths = [
+                '/usr/bin/php84',
+                '/usr/bin/php83',
+                '/usr/bin/php82',
+                '/usr/bin/php81',
+                '/usr/bin/php',
+                '/usr/local/bin/php84',
+                '/usr/local/bin/php83',
+                '/usr/local/bin/php82',
+                '/usr/local/bin/php',
+                '/opt/plesk/php/8.4/bin/php',  // Plesk-specific paths
+                '/opt/plesk/php/8.3/bin/php',
+                '/opt/plesk/php/8.2/bin/php',
+                '/opt/plesk/php/8.1/bin/php',
+            ];
+
+            foreach ($commonPaths as $path) {
+                if (is_executable($path)) {
+                    return $path;
+                }
+            }
+        }
+
+        // 4. Last resort: Use 'php' and hope it's in PATH
+        // The spawn will fail gracefully if this doesn't work
+        return 'php';
     }
 
 } 
