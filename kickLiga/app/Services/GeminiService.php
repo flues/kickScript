@@ -269,7 +269,8 @@ TXT;
                     'Content-Type: application/json'
                 ]);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 8);  // Max 8 Sekunden für Response
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);  // Max 3 Sekunden für Connection
 
                 $resp = curl_exec($ch);
                 $err = curl_error($ch);

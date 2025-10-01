@@ -230,23 +230,13 @@ class ContainerConfig
                     $seasonService = $container->get(SeasonService::class);
                 }
                 
-                $controller = new HomeController(
+                return new HomeController(
                     $container->get('view'),
                     $container->get(DataService::class),
                     $container->get(PlayerService::class),
                     $matchService,
                     $seasonService
                 );
-
-                if ($container->has(\App\Services\DailyAnalysisService::class)) {
-                    try {
-                        $controller->setDailyAnalysisService($container->get(\App\Services\DailyAnalysisService::class));
-                    } catch (\Throwable $e) {
-                        // ignore injection failures
-                    }
-                }
-
-                return $controller;
             },
             
             PlayerController::class => function (Container $container) {
