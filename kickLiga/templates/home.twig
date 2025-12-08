@@ -25,10 +25,37 @@
     {% if aiSummary %}
     <div class="row mb-3">
         <div class="col-md-12">
+            {% if 'unavailable' in aiSummary or 'not available' in aiSummary %}
+                {# Error state - show warning alert #}
+                <div class="alert alert-warning border-warning" role="alert">
+                    <div class="d-flex align-items-start">
+                        <i class="ph ph-warning-circle fs-3 me-3"></i>
+                        <div class="flex-grow-1">
+                            <strong class="d-block mb-2">AI Summary nicht verfügbar</strong>
+                            <div class="small">{{ aiSummary|e }}</div>
+                            {% if 'quota exceeded' in aiSummary %}
+                                <div class="mt-2 small">
+                                    <i class="ph ph-info"></i> 
+                                    Das kostenlose API-Limit wurde erreicht. 
+                                    <a href="https://ai.google.dev/pricing" target="_blank" class="alert-link">Mehr Infos zu Limits</a> 
+                                    oder warte bis zum Reset (täglich um Mitternacht UTC).
+                                </div>
+                            {% elseif 'overloaded' in aiSummary %}
+                                <div class="mt-2 small">
+                                    <i class="ph ph-info"></i> 
+                                    Die Google AI-Server sind überlastet. Versuche es in ein paar Minuten erneut.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                {# Success state - show info alert #}
                 <div class="alert alert-info text-white" role="alert">
-                <strong>AI Summary:</strong>
-                <div class="mt-2">{{ aiSummary|e|nl2br|raw }}</div>
-            </div>
+                    <strong><i class="ph ph-sparkle"></i> AI Summary:</strong>
+                    <div class="mt-2">{{ aiSummary|e|nl2br|raw }}</div>
+                </div>
+            {% endif %}
         </div>
     </div>
     {% endif %}

@@ -94,7 +94,20 @@ class GeminiService
             return 'AI summary unavailable (unexpected response).';
         } catch (\Throwable $e) {
             $this->logger->error('Gemini API request failed: ' . $e->getMessage());
-            return 'AI summary unavailable (request failed).';
+            
+            // Provide more specific error messages based on exception content
+            $errorMsg = $e->getMessage();
+            if (stripos($errorMsg, '429') !== false || stripos($errorMsg, 'quota') !== false) {
+                return 'AI summary unavailable (API quota exceeded - check billing or wait until reset).';
+            } elseif (stripos($errorMsg, '503') !== false || stripos($errorMsg, 'overloaded') !== false) {
+                return 'AI summary unavailable (Google AI servers overloaded - try again later).';
+            } elseif (stripos($errorMsg, '404') !== false) {
+                return 'AI summary unavailable (model not found - check configuration).';
+            } elseif (stripos($errorMsg, 'timeout') !== false || stripos($errorMsg, 'timed out') !== false) {
+                return 'AI summary unavailable (request timeout - slow network or overloaded servers).';
+            }
+            
+            return 'AI summary unavailable (API error: ' . substr($errorMsg, 0, 100) . ')';
         }
     }
 
@@ -217,18 +230,16 @@ TXT;
         // Model: text-bison-001 (text style). We use API key query param for simplicity.
         $configuredModel = getenv('GEMINI_MODEL') ?: null;
 
-        // Preferred model list. Start with configured model (if any), then common Gemini models,
-        // then legacy text-bison as last resort.
+        // Preferred model list. Start with configured model (if any), then Gemini 2.x models only.
+        // We only use 2.0-flash and 2.5-flash as fallback - no legacy models.
         $modelCandidates = [];
         if (!empty($configuredModel)) {
             $modelCandidates[] = $configuredModel;
         }
-        // common Gemini family
+        // Only Gemini 2.x family - 2.5-flash has higher free tier limits
         $modelCandidates = array_merge($modelCandidates, [
-            'gemini-2.0-flash',
-            'gemini-2.0',
-            'gemini-1.5',
-            'text-bison-001'
+            'gemini-2.0-flash-exp',
+            'gemini-2.5-flash'
         ]);
 
         // Build endpoint+payload tries for each model candidate
@@ -295,6 +306,17 @@ TXT;
                         $lastException = new \RuntimeException('Non-2xx response from Gemini API: ' . $code . ' - ' . $resp);
                         $this->logger->warning('GeminiService non-2xx: ' . $code);
                         $this->writeDebugLog(['endpoint' => $endpoint, 'attempt' => $attempt, 'error' => 'non_2xx', 'code' => $code, 'resp' => $resp]);
+                        
+                        // If 429 (quota exceeded), stop immediately - don't waste more quota
+                        if ($code === 429) {
+                            throw $lastException; // Exit completely, don't try other endpoints
+                        }
+                        
+                        // If 503 (overloaded), stop trying this model - don't spam Google's servers
+                        if ($code === 503) {
+                            break 2; // Break out of both loops to try next model in the list
+                        }
+                        
                         // If 404, try next endpoint variant immediately
                         if ($code === 404) {
                             break; // break attempt loop to try next endpoint variant
