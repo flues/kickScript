@@ -42,52 +42,9 @@ class GeminiService
         try {
             $response = $this->callGeminiApi($prompt);
 
-            // Google Generative Models (and generativelanguage) commonly return a
-            // 'candidates' array. For the generativelanguage generateContent API the
-            // shape is: candidates[].content.parts[].text. Handle that first.
-            if (isset($response['candidates']) && is_array($response['candidates']) && !empty($response['candidates'])) {
-                $candidate = $response['candidates'][0];
-
-                // generativelanguage: content -> parts -> text
-                if (isset($candidate['content']) && is_array($candidate['content'])) {
-                    $content = $candidate['content'];
-                    if (isset($content['parts']) && is_array($content['parts']) && !empty($content['parts'])) {
-                        $texts = [];
-                        foreach ($content['parts'] as $part) {
-                            if (is_array($part) && isset($part['text'])) {
-                                $texts[] = $part['text'];
-                            } elseif (is_string($part)) {
-                                $texts[] = $part;
-                            }
-                        }
-                        if (!empty($texts)) {
-                            // join parts with real newlines so paragraphs survive
-                            $joined = implode("\n", $texts);
-                            // normalize CRLF to LF and trim
-                            $joined = str_replace("\r\n", "\n", $joined);
-                            return trim($joined);
-                        }
-                    }
-                }
-
-                // older generative models sometimes provide 'content' as a string
-                if (isset($candidate['content']) && is_string($candidate['content'])) {
-                    return trim($candidate['content']);
-                }
-
-                // legacy 'output' style
-                if (isset($candidate['output']) && is_array($candidate['output'])) {
-                    foreach ($candidate['output'] as $out) {
-                        if (is_array($out) && isset($out['content']) && is_string($out['content'])) {
-                            return trim($out['content']);
-                        }
-                    }
-                }
-            }
-
-            // Fallbacks for other providers (OpenAI-like)
-            if (isset($response['choices'][0]['text'])) {
-                return trim($response['choices'][0]['text']);
+            $text = $this->extractTextFromResponse($response);
+            if ($text !== null) {
+                return $text;
             }
 
             $this->logger->warning('Unexpected Gemini/AI Studio response structure.', $response ?: []);
@@ -226,113 +183,212 @@ TXT;
 
     private function callGeminiApi(string $prompt): array
     {
-        // Use Google Generative Models REST API (AI Studio / Vertex AI)
-        // Model: text-bison-001 (text style). We use API key query param for simplicity.
         $configuredModel = getenv('GEMINI_MODEL') ?: null;
 
-        // Preferred model list. Start with configured model (if any), then Gemini 2.x models only.
-        // We only use 2.0-flash and 2.5-flash as fallback - no legacy models.
-        $modelCandidates = [];
+        // Prefer stable, production-ready Gemini models. Preview or experimental
+        // variants often have stricter quotas and are more likely to trigger 429s.
+        $modelCandidates = [
+            'gemini-2.5-flash',
+            'gemini-2.5-flash-lite'
+        ];
+
         if (!empty($configuredModel)) {
-            $modelCandidates[] = $configuredModel;
+            if (in_array($configuredModel, $modelCandidates, true)) {
+                array_unshift($modelCandidates, $configuredModel);
+            } else {
+                $this->logger->warning('Configured Gemini model is not part of the stable default list and will only be used after stable fallbacks.', [
+                    'configured_model' => $configuredModel
+                ]);
+                $modelCandidates[] = $configuredModel;
+            }
         }
-        // Only Gemini 2.x family - 2.5-flash has higher free tier limits
-        $modelCandidates = array_merge($modelCandidates, [
-            'gemini-2.0-flash-exp',
-            'gemini-2.5-flash'
-        ]);
 
-        // Build endpoint+payload tries for each model candidate
-        $tries = [];
-        foreach ($modelCandidates as $model) {
-            // generativelanguage generateContent endpoints (preferred for Gemini family)
-            $tries[] = [
-                'endpoint' => sprintf('https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s', $model, $this->apiKey),
-                'payload' => [ 'contents' => [ [ 'parts' => [ [ 'text' => $prompt ] ] ] ] ]
-            ];
-            $tries[] = [
-                'endpoint' => sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', $model, $this->apiKey),
-                'payload' => [ 'contents' => [ [ 'parts' => [ [ 'text' => $prompt ] ] ] ] ]
-            ];
-
-            // fall back to generativemodels generate endpoints used by text-bison style
-            $tries[] = [
-                'endpoint' => sprintf('https://generativemodels.googleapis.com/v1/models/%s:generate?key=%s', $model, $this->apiKey),
-                'payload' => [ 'prompt' => [ 'text' => $prompt ], 'temperature' => 0.2, 'maxOutputTokens' => 256 ]
-            ];
-            $tries[] = [
-                'endpoint' => sprintf('https://generativemodels.googleapis.com/v1beta2/models/%s:generate?key=%s', $model, $this->apiKey),
-                'payload' => [ 'prompt' => [ 'text' => $prompt ], 'temperature' => 0.2, 'maxOutputTokens' => 256 ]
-            ];
-        }
+        $modelCandidates = array_values(array_unique($modelCandidates));
 
         $attempts = 3;
         $lastException = null;
-        foreach ($tries as $try) {
-            $endpoint = $try['endpoint'];
-            $payload = $try['payload'];
+        foreach ($modelCandidates as $model) {
+            $tries = [
+                [
+                    'endpoint' => sprintf('https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s', $model, $this->apiKey),
+                    'payload' => [
+                        'contents' => [[
+                            'parts' => [[
+                                'text' => $prompt
+                            ]]
+                        ]],
+                        'generationConfig' => [
+                            'temperature' => 0.2,
+                            'maxOutputTokens' => 256
+                        ]
+                    ]
+                ],
+                [
+                    'endpoint' => sprintf('https://generativelanguage.googleapis.com/v1/models/%s:generateContent?key=%s', $model, $this->apiKey),
+                    'payload' => [
+                        'contents' => [[
+                            'parts' => [[
+                                'text' => $prompt
+                            ]]
+                        ]],
+                        'generationConfig' => [
+                            'temperature' => 0.2,
+                            'maxOutputTokens' => 256
+                        ]
+                    ]
+                ]
+            ];
 
-            for ($attempt = 1; $attempt <= $attempts; $attempt++) {
-                $ch = curl_init($endpoint);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                    'Content-Type: application/json'
-                ]);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-                curl_setopt($ch, CURLOPT_TIMEOUT, 8);  // Max 8 Sekunden für Response
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);  // Max 3 Sekunden für Connection
+            foreach ($tries as $try) {
+                $endpoint = $try['endpoint'];
+                $payload = $try['payload'];
 
-                $resp = curl_exec($ch);
-                $err = curl_error($ch);
-                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
+                for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+                    $ch = curl_init($endpoint);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                        'Content-Type: application/json'
+                    ]);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 
-                if ($resp === false || $err) {
-                    $lastException = new \RuntimeException('cURL error: ' . $err);
-                    $this->logger->warning('GeminiService attempt ' . $attempt . ' failed: ' . $err);
-                    $this->writeDebugLog(['endpoint' => $endpoint, 'attempt' => $attempt, 'error' => $err, 'code' => $code, 'resp' => $resp]);
-                } else {
-                    if ($code >= 200 && $code < 300) {
-                        $data = json_decode($resp, true);
-                        if ($data === null) {
-                            $lastException = new \RuntimeException('Failed to decode Gemini response.');
-                            $this->logger->warning('GeminiService invalid JSON response.');
-                            $this->writeDebugLog(['endpoint' => $endpoint, 'attempt' => $attempt, 'error' => 'invalid_json', 'resp' => $resp]);
-                        } else {
-                            return $data;
-                        }
+                    $resp = curl_exec($ch);
+                    $err = curl_error($ch);
+                    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+
+                    if ($resp === false || $err) {
+                        $lastException = new \RuntimeException('cURL error: ' . $err);
+                        $this->logger->warning('GeminiService attempt ' . $attempt . ' failed: ' . $err);
+                        $this->writeDebugLog([
+                            'model' => $model,
+                            'endpoint' => $endpoint,
+                            'attempt' => $attempt,
+                            'error' => $err,
+                            'code' => $code,
+                            'resp' => $resp
+                        ]);
                     } else {
-                        $lastException = new \RuntimeException('Non-2xx response from Gemini API: ' . $code . ' - ' . $resp);
-                        $this->logger->warning('GeminiService non-2xx: ' . $code);
-                        $this->writeDebugLog(['endpoint' => $endpoint, 'attempt' => $attempt, 'error' => 'non_2xx', 'code' => $code, 'resp' => $resp]);
-                        
-                        // If 429 (quota exceeded), stop immediately - don't waste more quota
-                        if ($code === 429) {
-                            throw $lastException; // Exit completely, don't try other endpoints
-                        }
-                        
-                        // If 503 (overloaded), stop trying this model - don't spam Google's servers
-                        if ($code === 503) {
-                            break 2; // Break out of both loops to try next model in the list
-                        }
-                        
-                        // If 404, try next endpoint variant immediately
-                        if ($code === 404) {
-                            break; // break attempt loop to try next endpoint variant
+                        if ($code >= 200 && $code < 300) {
+                            $data = json_decode($resp, true);
+                            if ($data === null) {
+                                $lastException = new \RuntimeException('Failed to decode Gemini response.');
+                                $this->logger->warning('GeminiService invalid JSON response.');
+                                $this->writeDebugLog([
+                                    'model' => $model,
+                                    'endpoint' => $endpoint,
+                                    'attempt' => $attempt,
+                                    'error' => 'invalid_json',
+                                    'resp' => $resp
+                                ]);
+                            } else {
+                                $text = $this->extractTextFromResponse($data);
+                                if ($text !== null && $this->isSummarySuspiciouslyShort($text)) {
+                                    $this->logger->warning('GeminiService returned suspiciously short text, trying next fallback.', [
+                                        'model' => $model,
+                                        'text_length' => strlen($text)
+                                    ]);
+                                    $this->writeDebugLog([
+                                        'model' => $model,
+                                        'endpoint' => $endpoint,
+                                        'attempt' => $attempt,
+                                        'error' => 'suspiciously_short_success',
+                                        'text_length' => strlen($text),
+                                        'text_preview' => $text,
+                                        'finish_reason' => $data['candidates'][0]['finishReason'] ?? null,
+                                        'usage_metadata' => $data['usageMetadata'] ?? null,
+                                        'resp' => $resp
+                                    ]);
+                                    continue 3;
+                                }
+
+                                return $data;
+                            }
+                        } else {
+                            $lastException = new \RuntimeException('Non-2xx response from Gemini API: ' . $code . ' - ' . $resp);
+                            $this->logger->warning('GeminiService non-2xx: ' . $code);
+                            $this->writeDebugLog([
+                                'model' => $model,
+                                'endpoint' => $endpoint,
+                                'attempt' => $attempt,
+                                'error' => 'non_2xx',
+                                'code' => $code,
+                                'resp' => $resp
+                            ]);
+
+                            // Model-specific rate limits should not block stable fallbacks.
+                            if ($code === 429 || $code === 503) {
+                                continue 3;
+                            }
+
+                            // Try the next endpoint variant for unsupported model versions.
+                            if ($code === 404) {
+                                break;
+                            }
                         }
                     }
-                }
 
-                // Exponential backoff before retrying
-                if ($attempt < $attempts) {
-                    sleep((int) pow(2, $attempt));
+                    if ($attempt < $attempts) {
+                        sleep((int) pow(2, $attempt));
+                    }
                 }
             }
-            // continue to next try (endpoint+payload)
         }
 
         throw $lastException ?: new \RuntimeException('Gemini API request failed');
+    }
+
+    private function extractTextFromResponse(array $response): ?string
+    {
+        if (isset($response['candidates']) && is_array($response['candidates']) && !empty($response['candidates'])) {
+            $candidate = $response['candidates'][0];
+
+            if (isset($candidate['content']) && is_array($candidate['content'])) {
+                $content = $candidate['content'];
+                if (isset($content['parts']) && is_array($content['parts']) && !empty($content['parts'])) {
+                    $texts = [];
+                    foreach ($content['parts'] as $part) {
+                        if (is_array($part) && isset($part['text'])) {
+                            $texts[] = $part['text'];
+                        } elseif (is_string($part)) {
+                            $texts[] = $part;
+                        }
+                    }
+
+                    if (!empty($texts)) {
+                        $joined = implode("\n", $texts);
+                        $joined = str_replace("\r\n", "\n", $joined);
+
+                        return trim($joined);
+                    }
+                }
+            }
+
+            if (isset($candidate['content']) && is_string($candidate['content'])) {
+                return trim($candidate['content']);
+            }
+
+            if (isset($candidate['output']) && is_array($candidate['output'])) {
+                foreach ($candidate['output'] as $out) {
+                    if (is_array($out) && isset($out['content']) && is_string($out['content'])) {
+                        return trim($out['content']);
+                    }
+                }
+            }
+        }
+
+        if (isset($response['choices'][0]['text'])) {
+            return trim($response['choices'][0]['text']);
+        }
+
+        return null;
+    }
+
+    private function isSummarySuspiciouslyShort(string $text): bool
+    {
+        return strlen(trim($text)) < 80;
     }
 
     private function writeDebugLog(array $payload): void

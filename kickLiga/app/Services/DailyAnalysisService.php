@@ -186,7 +186,7 @@ class DailyAnalysisService
                 @mkdir($dataDir, 0755, true);
             }
 
-            file_put_contents($dataDir . '/ai_summary.txt', $summary);
+            $this->writeSummaryFile($dataDir, $summary);
 
             if (empty(trim((string)$summary)) || stripos((string)$summary, 'unavailable') !== false) {
                 $errFile = $dataDir . '/ai_summary_error.log';
@@ -206,5 +206,14 @@ class DailyAnalysisService
                 $this->logger->error('DailyAnalysisService error: ' . $e->getMessage());
             }
         }
+    }
+
+    private function writeSummaryFile(string $dataDir, string $summary): void
+    {
+        $targetFile = $dataDir . '/ai_summary.txt';
+        $tempFile = $targetFile . '.tmp';
+
+        file_put_contents($tempFile, $summary, LOCK_EX);
+        rename($tempFile, $targetFile);
     }
 }

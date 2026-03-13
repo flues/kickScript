@@ -147,7 +147,7 @@ if (!is_dir($dataDir)) {
     mkdir($dataDir, 0755, true);
 }
 
-file_put_contents($dataDir . '/ai_summary.txt', $summary);
+writeSummaryFile($dataDir, $summary);
 
 // If the summary looks suspicious (empty or placeholder), write a short debug line
 if (empty(trim((string)$summary)) || stripos((string)$summary, 'unavailable') !== false) {
@@ -156,4 +156,19 @@ if (empty(trim((string)$summary)) || stripos((string)$summary, 'unavailable') !=
     @file_put_contents($errFile, $entry, FILE_APPEND | LOCK_EX);
 }
 
+if (strlen(trim((string)$summary)) < 80) {
+    $errFile = __DIR__ . '/../kickLiga/data/ai_summary_error.log';
+    $entry = '[' . date('c') . '] Generated suspiciously short summary (' . strlen(trim((string)$summary)) . ' chars): ' . json_encode($summary, JSON_UNESCAPED_UNICODE) . PHP_EOL;
+    @file_put_contents($errFile, $entry, FILE_APPEND | LOCK_EX);
+}
+
 echo "AI summary written to {$dataDir}/ai_summary.txt\n";
+
+function writeSummaryFile(string $dataDir, string $summary): void
+{
+    $targetFile = $dataDir . '/ai_summary.txt';
+    $tempFile = $targetFile . '.tmp';
+
+    file_put_contents($tempFile, $summary, LOCK_EX);
+    rename($tempFile, $targetFile);
+}
